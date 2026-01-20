@@ -1,0 +1,141 @@
+/* Container for the whole page */
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: white;
+}
+
+/* Left Side: Image Area */
+.image-section {
+    width: 50%;
+    padding: 24px;
+    display: flex;
+}
+
+.bg-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 40px; /* High rounding as seen in image */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.signup-badge {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background-color: #2d2d2d;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Right Side: Form Area */
+.form-section {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 60px;
+}
+
+.form-wrapper {
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.form-wrapper h1 {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.form-wrapper p {
+    color: #666;
+    margin-bottom: 40px;
+}
+
+/* Inputs */
+.input-group {
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 30px 0;
+}
+
+.line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #ccc;
+}
+
+.or-text {
+    padding: 0 15px;
+    font-size: 20px;
+}
+
+/* Buttons */
+.btn-employee {
+    width: 100%;
+    background: transparent;
+    border: 2px solid #ccc;
+    padding: 16px;
+    border-radius: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.btn-login {
+    width: 100%;
+    background-color: #050a24; /* Deep Navy from image */
+    color: white;
+    padding: 20px;
+    border-radius: 35px;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.footer-text {
+    margin-top: 30px;
+    font-size: 18px;
+}
+
+.signup-link {
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+}
