@@ -1,0 +1,95 @@
+.seat-booking-container { display: flex; height: 100vh; background: #f3f4f6; }
+.sidebar { width: 240px; background: #f37021; color: white; padding: 20px; }
+.sidebar-header { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; }
+.nav-item { padding: 12px; cursor: pointer; border-radius: 4px; }
+.nav-item.active { background: rgba(255,255,255,0.2); }
+
+.main-content { flex: 1; overflow-y: auto; }
+.content-header { background: white; padding: 20px 40px; border-bottom: 1px solid #ddd; }
+.booking-form { display: flex; gap: 20px; padding: 20px 40px; background: white; border-top: 4px solid #f37021; margin: 20px; border-radius: 8px; }
+.booking-form input { flex: 1; border: none; border-bottom: 2px solid #ddd; padding: 8px; outline: none; }
+
+.seat { cursor: pointer; transition: 0.2s; }
+.seat-available { fill: #e5e7eb; stroke: #9ca3af; }
+.seat-selected { fill: #f37021 !important; stroke: #c2410c !important; }
+.seat-booked { fill: #fca5a5 !important; stroke: #ef4444 !important; pointer-events: none; }
+
+.floor-bg { fill: white; stroke: #374151; stroke-width: 2; }
+.wall { fill: none; stroke: #374151; stroke-width: 1.5; }
+.meeting-room-bg { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+.meeting-text { fill: #1e40af; font-weight: bold; }
+.room-label { font-size: 8px; font-weight: bold; fill: #6b7280; text-transform: uppercase; }
+
+.btn-submit { background: #f37021; color: white; border: none; padding: 12px 40px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+
+/* Green: Available */
+.seat-available {
+    fill: #22c55e; 
+    stroke: #166534;
+    stroke-width: 0.5;
+}
+
+/* Red: Occupied & Disabled */
+.seat-booked {
+    fill: #ef4444; 
+    stroke: #991b1b;
+    cursor: not-allowed;
+}
+
+/* Orange/Yellow: Selected by you right now */
+.seat-selected {
+    fill: #f37021;
+    stroke: #c2410c;
+    stroke-width: 1.5;
+}
+
+/* Green = Safe to book */
+.seat-available {
+    fill: #22c55e; 
+    stroke: #166534;
+}
+
+/* Red = Already taken, clicking is disabled */
+.seat-booked {
+    fill: #ef4444; 
+    stroke: #991b1b;
+}
+
+/* Orange = Your current selection */
+.seat-selected {
+    fill: #f37021;
+    stroke: #c2410c;
+}
+
+.booking-list{
+    display: flex;
+    background-color: white;
+    padding: 20px 40px;
+    margin: 20px;
+    border-radius: 8px;
+    column-gap: 14px;
+    list-style: none;
+}
+.booking-list li{
+    background: aliceblue;
+    padding: 11px;
+    border-radius: 6px;
+}
+.edit-form{
+    background-color: rgb(234, 192, 192);
+    padding: 20px 40px;
+    margin: 20px;
+    border-radius: 8px;
+    margin-top: -140px;
+    margin-bottom: 329px;
+    margin-left: -132px;
+}
+.edit-form input{
+    margin-right: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    border-bottom: 2px solid #ddd;
+    outline: none;
+}

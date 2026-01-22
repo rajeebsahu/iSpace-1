@@ -9,6 +9,7 @@ const Booking = () => {
   // Use one state to track which tab is active
   const [activeTab, setActiveTab] = useState('Room Booking');
   const [ChennaiRoomData,setChennaiRoomData]=useState([]);
+  const [BookingHistoryData,setBookingHistoryData]=useState([]);
 
   //rooms tye
   const [meetingRoom,setMeetingRoom]=useState('True')
@@ -24,8 +25,22 @@ const Booking = () => {
   const [ReleaseTime,setReleaseTime]=useState("")
   const [location,setLocation]=useState("")
   const [occupied_by,setOccupied_by]=useState("")
-  const [Bookedby,setBookedby]=useState("ganesh@iopex.com")
+  const [Bookedby,setBookedby]=useState(localStorage.getItem('userEmail'))
 
+  //Edited data
+  const [editingId, setEditingId] = useState(null);
+  const [newStartTime, setNewStartTime] = useState("");
+  const [newEndTime, setNewEndTime] = useState("");
+  const [newDate,setNewDate]=useState("")
+
+  //ForNext Bookin
+  const [ToTime,setToTime]=useState("")
+  const [FromTime,setFromTime]=useState("")
+  const [bookNextAvailableRoom,setBookNextAvailableRoom]=useState(null)
+  const [nextBooking,setNextBooking]=useState(false)
+
+
+  const savedEmail = localStorage.getItem('userEmail');
 
 
 
@@ -37,6 +52,19 @@ const Booking = () => {
   }
   useEffect(() => {
     getChennaiRoom();
+  }, []);
+
+
+
+
+  const getHistoryChennaiRoom = ()=>{
+    Axios.get("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/BookingHistory/",{
+    }).then((res)=>{
+      setBookingHistoryData(res.data)
+    })
+  }
+  useEffect(() => {
+    getHistoryChennaiRoom();
   }, []);
 
   const counts = {
@@ -56,30 +84,7 @@ const Booking = () => {
   });
   
   
-//   const BookingRoom = () => {
-//   // 1. Point to the specific @action URL
-//   // 2. Ensure keys match the backend (room_name vs roomType)
-//   Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/bookroom/", {
-//       id: AvailableRoom, // Changed from roomType to room_name
-//       date: date,
-//       AvailableRoom: AvailableRoom,
-//       BookingTime: BookingTime,
-//       ReleaseTime: ReleaseTime,
-//       location: location,
-//       occupied_by: occupied_by,
-//       Bookedby: Bookedby,
-//       MainRoom: roomType,
-//       availability_status:"false" // Added since your backend expects this
-//     })
-//     .then((res) => {
-//       alert("Data added successfully");
-//       getChennaiRoom();
-//     })
-//     .catch((err) => {
-//       console.error(err.response.data); // Log the actual error from Django
-//       alert("Error occurred: " + (err.response.data.message || "Bad Request"));
-//     });
-// }
+
 const BookingRoom = () => {
     Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/bookroom/", {
         id: AvailableRoom, // Sending the ID picked from the dropdown
@@ -101,6 +106,35 @@ const BookingRoom = () => {
     });
 };
 
+const CancelBooking = (id) => {
+    if (window.confirm("Are you sure you want to cancel this booking?")) {
+        Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/cancel_booking/", {
+            id: id
+        })
+        .then((res) => {
+            alert("Booking cancelled successfully");
+            getChennaiRoom(); // Refresh the list
+        })
+        .catch((err) => {
+            alert("Error: " + (err.response?.data?.message || "Cancellation failed"));
+        });
+    }
+};
+
+const handleUpdate = (id) => {
+    Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/edit_booking/", {
+        id: id,
+        BookingTime: newStartTime,
+        ReleaseTime: newEndTime,
+        date: newDate
+    })
+    .then((res) => {
+        alert("Booking updated!");
+        setEditingId(null); // Close edit mode
+        getChennaiRoom();   // Refresh data
+    })
+    .catch((err) => alert("Update failed"));
+};
 
 
   return (
@@ -114,8 +148,8 @@ const BookingRoom = () => {
         <div className="header-buttons">
           <button className="btn-dark">Employee Panel</button>
           <button className="btn-light">
-            <Link to="/adminpanel" style={{ textDecoration: 'none', color: 'inherit' }}>
-              Admin Panel
+            <Link to="/managerlevelseatbooking" style={{ textDecoration: 'none', color: 'inherit' }}>
+              Manager Panel
             </Link>
           </button>
         </div>
@@ -160,22 +194,21 @@ const BookingRoom = () => {
                   <input type="date" placeholder="January 5th, 2026" onChange={(e)=>{setDate(e.target.value)}} />
                 </div>
                 <div className="input-group">
+                  <label>From</label>
+                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setBookingTime(e.target.value); setToTime(e.target)}} />
+                </div>
+                <div className="input-group">
+                  <label>To</label>
+                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setReleaseTime(e.target.value); setFromTime(e.target.value)}} />
+                </div>
+                <div className="input-group">
                   <label>Select Room Type</label>
-                  {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
-                    <option>Available Meeting Room</option>
-                    {
-                      ChennaiRoomData.map((data)=>{
-                        if(data.availability_status===false && data.MainRoomName==="Meeting Room"){
-                          return <option key={data.id}>{data.room_name}</option>
-                        }
-                      })
-                    }
-                  </select> */}
                   <select onChange={(e) => setAvailableRoom(e.target.value)}>
     <option value="">Select Room</option>
     {ChennaiRoomData.map((data) => {
+      console.log(data.availability_status)
         // Filter: Show rooms that match category AND are currently AVAILABLE (status === false)
-        if (data.availability_status === true && data.MainRoomName === roomType) {
+        if (data.availability_status === false && data.MainRoomName === roomType ) {
             return (
                 <option key={data.id} value={data.id}>
                     {data.room_name}
@@ -185,15 +218,6 @@ const BookingRoom = () => {
         return null;
     })}
 </select>
-                </div>
-
-                <div className="input-group">
-                  <label>From</label>
-                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setBookingTime(e.target.value)}} />
-                </div>
-                <div className="input-group">
-                  <label>To</label>
-                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setReleaseTime(e.target.value)}} />
                 </div>
                 <div className="input-group">
                   <label>Location</label>
@@ -211,7 +235,7 @@ const BookingRoom = () => {
                 </div>
                 <div className="input-group">
                   <label>Employee Name</label>
-                  <input type="text" placeholder="Employee Name" onChange={(e)=>{setBookedby(e.target.value)}} />
+                  <input type="text" placeholder="Employee Name" value={savedEmail} disabled  onChange={(e)=>{setBookedby(e.target.value)}} />
                 </div>
                 </>
                 )}
@@ -227,8 +251,8 @@ const BookingRoom = () => {
                     <option>Select Room</option>
                     {
                       ChennaiRoomData.map((data)=>{
-                        if(data.availability_status===true && data.MainRoomName==="Conference Room"){
-                          return <option key={data.id}>{data.room_name}</option>
+                        if(data.availability_status===false && data.MainRoomName===roomType){
+                          return <option key={data.id} value={data.id}>{data.room_name}</option>
                         }
                       })
                     }
@@ -259,7 +283,7 @@ const BookingRoom = () => {
                 </div>
                 <div className="input-group">
                   <label>Employee Name</label>
-                  <input type="text" placeholder="Employee Name" onChange={(e)=>{setBookedby(e.target.value)}} />
+                  <input type="text" placeholder="Employee Name" value={savedEmail} disabled onChange={(e)=>{setBookedby(e.target.value)}} />
                 </div></>
                 )}
 
@@ -274,8 +298,8 @@ const BookingRoom = () => {
                     <option>Select Room</option>
                     {
                       ChennaiRoomData.map((data)=>{
-                        if(data.availability_status===true && data.MainRoomName==="Training Room"){
-                          return <option key={data.id}>{data.room_name}</option>
+                        if(data.availability_status===false && data.MainRoomName===roomType){
+                          return <option key={data.id} value={data.id}>{data.room_name}</option>
                         }
                       })
                     }
@@ -306,7 +330,7 @@ const BookingRoom = () => {
                 </div>
                 <div className="input-group">
                   <label>Employee Name</label>
-                  <input type="text" placeholder="Employee Name" onChange={(e)=>{setBookedby(e.target.value)}} />
+                  <input type="text" placeholder="Employee Name" value={savedEmail} disabled onChange={(e)=>{setBookedby(e.target.value)}} />
                 </div>
                 </>
                 )}
@@ -318,36 +342,77 @@ const BookingRoom = () => {
             <h4>Occupied Room Details</h4>
             <div className='occupiedRoomDetail'>
             {ChennaiRoomData.map((data)=>{
-              if(data.availability_status===false){
+              if(data.availability_status===true){
                 return(
                 <div key={data.id} className='occupiedRoomDetailData'>
                   
                   <h3>ChennaiRoom: {data.room_name}</h3>
                   <p>Location: {data.location}</p>
                   <p>Capacity: {data.capacity}</p>
-                  <p>Booked By: {data.Occupied_by}</p>
+                  <p>Booked By: {data.BookedBy}</p>
                   <p>Release Timing: {data.ReleaseTiming}</p>
+                  <button onClick={() => {setBookNextAvailableRoom(data.id); setNextBooking(true)}}>Book room for next available time</button>
                 </div>
               )
               }
                return null;
               
             })}
+            {nextBooking && (
+              <div className="next-booking-form">
+                <h4>Book Next Available Room</h4>
+                <div className="input-group">
+                  <label>Date</label>
+                  <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
+                </div>
+                <div className="input-group">
+                  <label>From</label>
+                  <input type="time" value={BookingTime} onChange={(e)=>setBookingTime(e.target.value)} />
+                </div>
+                <div className="input-group">
+                  <label>To</label>
+                  <input type="time" value={ReleaseTime} onChange={(e)=>setReleaseTime(e.target.value)} />
+                </div>
+                <div className="input-group">
+                  <label>Location</label>
+                  <select value={location} onChange={(e)=>setLocation(e.target.value)}>
+                    <option>iSpace - Bangalore</option>
+                    <option>iSpace - Chennai</option>
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label>Team Name</label>
+                  <select  onChange={(e)=>setOccupied_by(e.target.value)}>
+                    <option>Imigrate</option>
+                    <option>ServiceNow</option>
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label>Employee Name</label>
+                  <input type="text" onChange={(e)=>setBookedby(e.target.value)} />
+                </div>
+                <button className="btn-book-next" onClick={() => {
+                  // Call BookingRoom with the selected room ID
+                  BookingRoom(bookNextAvailableRoom);
+                  setNextBooking(false); // Close the form after booking
+                }}>Book Room</button>
+                <button className="btn-cancel-next" onClick={() => setNextBooking(false)}>Cancel</button>
+              </div>
+            )}
+
             </div>
 
             {/* Only show "My Bookings" if an employee name is typed */}
-            <h2 className="section-title">My Recent Bookings</h2>
+            <h2 className="section-title">My Booking Data</h2>
             <div className='recentBookings'>
-
 {Bookedby && (
   <>
     {(() => {
       const myBookings = ChennaiRoomData.filter(
         (data) => 
-          data.BookedBy === Bookedby &&    // Match the employee name
-          data.availability_status === false // Match only 'Occupied' rooms
+          data.BookedBy === savedEmail &&    // Match the employee name
+          data.availability_status === true // Match only 'Occupied' rooms
       );
-
       if (myBookings.length > 0) {
         return myBookings.map((data) => (
           <div key={data.id} className="booking-card-item">
@@ -355,11 +420,66 @@ const BookingRoom = () => {
             <h3>Room: {data.room_name} ({data.MainRoomName})</h3>
             <p><strong>Location:</strong> {data.location}</p>
             <p><strong>Time:</strong> {data.OccuipedTiming} - {data.ReleaseTiming}</p>
-            <p><strong>Status:</strong> Confirmed & Occupied</p>
+            <button className="btn-cancel" onClick={() => CancelBooking(data.id)}>Cancel Booking</button>
+            <button className="btn-edit" onClick={() => setEditingId(data.id)}>Edit Booking</button>
+
+            {editingId === data.id && (
+              <div className="edit-booking-form">
+                <h4>Edit Booking Time</h4>
+                <div className="input-group">
+                  <label>New Start Time</label>
+                  <input type = "date" value={newDate} onChange={(e)=>setNewDate(e.target.value)}></input>
+                  <input 
+                    type="time" 
+                    value={newStartTime} 
+                    onChange={(e) => setNewStartTime(e.target.value)} 
+                  />
+                </div>
+                <div className="input-group">
+                  <label>New End Time</label>
+                  <input 
+                    type="time" 
+                    value={newEndTime} 
+                    onChange={(e) => setNewEndTime(e.target.value)} 
+                  />
+                </div>
+                <button className="btn-update" onClick={() => handleUpdate(data.id)}>Update Booking</button>
+                <button className="btn-cancel-edit" onClick={() => setEditingId(null)}>Cancel</button>
+              </div>
+            )}
           </div>
         ));
       } else {
         return <p className="no-data-text">No active bookings found for "{Bookedby}"</p>;
+      }
+    })()}
+   
+  </>
+)}
+ </div>
+
+
+ <h2 className="section-title">Your Past Booking Data</h2>
+            <div className='PastBookings'>
+{Bookedby && (
+  <>
+    {(() => {
+      const myBookings = BookingHistoryData.filter(
+        (data) => 
+          data.booked_by === Bookedby // Match only 'Occupied' rooms
+      );
+      if (myBookings.length > 0) {
+        return myBookings.map((data) => (
+          <div key={data.id} className="booking-card-item">
+            <h4>Booking Details for {Bookedby}</h4>
+            <h3>Room: {data.room_name} ({data.main_room_name})</h3>
+            <p><strong>Location:</strong> {data.location}</p>
+            <p><strong>Time:</strong> {data.start_time} - {data.end_time}</p>
+            {/* <p><strong>Status:</strong> Confirmed & Occupied</p> */}
+          </div>
+        ));
+      } else {
+        return <p className="no-data-text">No active past bookings found for "{Bookedby}"</p>;
       }
     })()}
    

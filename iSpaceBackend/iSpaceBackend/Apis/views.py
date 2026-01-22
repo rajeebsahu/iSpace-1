@@ -3,177 +3,78 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
+
 from rest_framework import status
+from django.utils import timezone
 
 
 import datetime
 from rest_framework.decorators import action
-from Apis.models import admin,Employees,ChennaiRooms,BangaloreRooms,MeetingRoom,ProjectRomm,ConferenceRoom
-from Apis.serializers import adminSerializers,EmployeesSerializers,ChennaiRoomsSerializers,BangaloreRoomsSerializers,ProjectRommSerializers,ConferenceRoomSerializers
+from Apis.models import admin,Employees,ChennaiRooms,BookingHistory,OfficeSeat,BangaloreRooms,MeetingRoom,ProjectRomm,ConferenceRoom
+from Apis.serializers import adminSerializers,EmployeesSerializers,ChennaiRoomsSerializers,OfficeSeatSerializers,BookingHistorySerializer,BangaloreRoomsSerializers,ProjectRommSerializers,ConferenceRoomSerializers
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class adminViewSet(viewsets.ModelViewSet):
     queryset = admin.objects.all()
     serializer_class = adminSerializers
+    
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request):
-        name = request.data.get('adminname')
-        password = request.data.get('adminpassword')
-        print(name)
-        print(password)
+        email = request.data.get('email')
+        password = request.data.get('password')
+    
+        print(f"Login attempt for: {email}")
+    
         try:
-            admin = admin.objects.get(name=name, password=password)
-            return Response(adminSerializers(admin).data)
-        except Admin.DoesNotExist:
-            return Response({'message': 'wrong details'}, status=400)
-    @action(detail=False, methods=['post'])
-    def add_admin(self, request):
-        # Directly providing the data to the serializer
-        data = {
-            'name': 'admin',  # Mapping userName to 'name'
-            'password': 'admin@123'
-        }
-        serializer = self.serializer_class(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Admin added successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            user_obj = admin.objects.get(email=email, password=password)
+        
+            # FIX: Pass the request context here
+            serializer = adminSerializers(user_obj, context={'request': request})
+        
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
+        except admin.DoesNotExist:
+            return Response({'message': 'Incorrect Email or Password'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error: {e}")
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+ 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employees.objects.all()
     serializer_class = EmployeesSerializers
-    @action(detail=False, methods=['post'])
-    def setuserEdit(self, request):
-        print("Received query parameters:", request.query_params)
-        user_id = request.query_params.get('userEmail')
-        Username = request.data.get("userName")
-        userEmail = request.data.get("userEmail_id")
-        userMobile = request.data.get("userMobile")
-        UserGender = request.data.get("UserGender")
-        userAddress = request.data.get("userAddress")
-        print(user_id)
-        print(Username)
-        try:
-            # Fetch the user object based on the provided id
-            user_instance = user.objects.get(email=user_id)
-            print(user_id)
-            
-            # Update fields of the user instance
-            user_instance.name = Username
-            user_instance.email = userEmail
-            user_instance.alt_email = useAlterEmail
-            user_instance.mobile = userMobile
-            user_instance.gender = UserGender
-            user_instance.address = userAddress
-            
-            # Save the updated user instance
-            user_instance.save()
-            
-            # Serialize and return the updated user data
-            serializer = userSerializers(user_instance, context={'request': request})
-            return Response(serializer.data, status=200)
-        except user.DoesNotExist:
-            return Response({'message': 'User not found'}, status=404)
-           
-        except Exception as e:
-            print(e)
-            return Response({'message': 'Unable to set data'}, status=400)
-    @action(detail=False, methods=['post'])
-    def changepassword(self,request):
-        userEmail = request.data.get("userEmail")
-        currentpassword =  request.data.get("currentpassword")
-        newpassword = request.data.get("newpassword")
-        print("Request Data:", request.data)
-        try:
-            user_instance = user.objects.get(email=userEmail)
-            print(user_instance.password)
-            if (currentpassword == user_instance.password):
-                user_instance.password = newpassword
-                user_instance.save()
-                print(user_instance.password)
-                serializer = userSerializers(user_instance, context={'request': request})
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Current password is incorrect'}, status=400)
-        
-        except user.DoesNotExist:
-            return Response({'message': 'User not found'}, status=404)
-        
-        except Exception as e:
-            print(f"Error: {e}")
-            return Response({'message': 'Unable to change password'}, status=400)
-    @action(detail=False, methods=['get'])
+    
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request):
-        email = request.data.get('useremail')
-        password = request.data.get('userpassword')
+        email = request.data.get('email')
+        password = request.data.get('password')
+    
+    # Debugging
+        print(f"Login attempt for: {email}")
+
         try:
-            user = User.objects.get(email=email, password=password)
-            return Response(UserSerializer(user).data)
-        except User.DoesNotExist:
-            return Response({'message': 'Incorrect Email or Password'}, status=400)
-    @action(detail=False, methods=['get'])
-    def viewUser(self, request):
-        print("Received query parameters:", request.query_params)
-        email = request.query_params.get('userEmail')
-        print(email)
-        if not email:
-            return Response({'message': 'Email parameter is required'}, status=400)
-        try:
-            # Use filter to get all matching tickets
-            users = Employees.objects.filter(email=email)
-            if users.exists():
-                serializer = EmployeesSerializers(users, many=True, context={'request': request})
-                return Response(serializer.data)
-            else:
-                return Response({'message': 'No tickets found for this email'}, status=404)
+            # 1. Use 'Employees' (your model name) NOT 'User'
+            # 2. Make sure you have imported Employees at the top of the file
+            user_obj = Employees.objects.get(email=email, password=password)
+        
+            # 3. Use your serializer to return the data
+            serializer = EmployeesSerializers(user_obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Employees.DoesNotExist: # 4. Must be ModelName.DoesNotExist
+            return Response({'message': 'Incorrect Email or Password'}, status=status.HTTP_400_BAD_REQUEST)
+    
         except Exception as e:
-            print(e)
-            return Response({'message': 'An error occurred'}, status=500)
-    @action(detail=False , methods=['post'])
-    def submitedit(self,request):
-        user_id = request.query_params.get("Id")
-        Username =  request.data.get("Username")
-        userEmail =  request.data.get("userEmail")
-        useAlterEmail =  request.data.get("useAlterEmail")
-        userMobile =  request.data.get("userMobile")
-        UserGender = request.data.get("UserGender")
-        userAddress = request.data.get("userAddress")
-        userPassword = request.data.get("userPassword")
-        print(user_id)
-        try:
-             user_instance = Employees.objects.get(id=user_id)
-             user_instance.name = Username
-             user_instance.email = userEmail
-             user_instance.alt_email = useAlterEmail
-             user_instance.mobile = userMobile
-             user_instance.gender =UserGender
-             user_instance.address = userAddress
-             user_instance.password =userPassword
-             user_instance.save()
-             serializer = EmployeesSerializers(user_instance, context={'request': request})
-             return Response(serializer.data, status=200)
-        except Employees.DoesNotExist:
-            return Response({'message': 'User not found'}, status=404)
-        except Exception as e:
-            print(e)
-            return Response({'message': 'Unable to edit data'}, status=400)
-    @action(detail=False , methods=['delete'])
-    def submitdelete(self,request):
-        user_id = request.data.get("Id1")
-        print(user_id)
-        try:
-            user_instance = user.objects.get(id = user_id)
-            print(user_instance)
-            user_instance.delete()
-            serializer = EmployeesSerializers(user_instance, context={'request': request})
-            return Response({'message': 'Task deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-        except Employees.DoesNotExist:
-            return Response({'message': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({'message': 'Unable to delete task'}, status=status.HTTP_400_BAD_REQUEST)
-            
+            # Catch any other weird errors
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
 class ChennaiRoomViewSet(viewsets.ModelViewSet):
 
@@ -189,50 +90,20 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(rooms, many=True)
         return Response(serializer.data)
 
-    # @action(detail=False, methods=['post'])
-    # def bookroom(self, request):
-    #     room_name = request.data.get('room_name')
-    #     print(room_name)
-        
-    #     try:
-    #         # 1. Get the room
-    #         room = ChennaiRooms.objects.get(room_name=room_name)
-            
-    #         # 2. Run reset logic first to see if it just became available
-    #         room.check_and_reset()
-    #         print(room.availability_status)
-    #         if room.availability_status == True:
-    #             return Response({'message': 'Room is already occupied'}, status=400)
-    #         # 3. Update the existing room row with new data
-    #         elif room.availability_status == False:
-    #             room.MainRoomName = request.data.get('MainRoom', 'Training Room')
-    #             room.Occupied_by = request.data.get('occupied_by', 'Guest')
-    #             room.OccuipedTiming = request.data.get('BookingTime')
-    #             room.ReleaseTiming = request.data.get('ReleaseTime')
-    #             room.availability_status = True  # Mark as occupied
-    #             room.BookedBy = request.data.get('Bookedby', 'Employee')
-    #             room.save()
-    #         serializer = ChennaiRoomsSerializers(room)
-    #         return Response(serializer.data, status=200)
-
-    #     except ChennaiRooms.DoesNotExist:
-    #         return Response({'message': 'Room not found'}, status=404)
-    #     except Exception as e:
-    #         return Response({'message': str(e)}, status=400)
     @action(detail=False, methods=['post'])
     def bookroom(self, request):
         # CHANGE: Look for 'id' instead of 'room_name'
         room_id = request.data.get('id')
         
+        
         try:
             # CHANGE: Filter by unique primary key ID
             room = ChennaiRooms.objects.get(id=room_id)
-            
             room.check_and_reset()
             
             # Logic check: In your model, availability_status=False means AVAILABLE
             # If status is True, it is already occupied.
-            if room.availability_status == False:
+            if room.availability_status == True:
                 return Response({'message': 'Room is already occupied'}, status=400)
             
             # Update the existing room row
@@ -240,7 +111,7 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
             room.Occupied_by = request.data.get('occupied_by', 'Guest')
             room.OccuipedTiming = request.data.get('BookingTime')
             room.ReleaseTiming = request.data.get('ReleaseTime')
-            room.availability_status = False  # Mark as occupied
+            room.availability_status = True  # Mark as occupied
             room.BookedBy = request.data.get('Bookedby', 'Employee')
             room.save()
             
@@ -252,7 +123,156 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # This catches the MultipleObjectsReturned error if you kept using room_name
             return Response({'message': str(e)}, status=400)
+    
+    @action(detail=False, methods=['post'])
+    def cancel_booking(self, request):
+        room_id = request.data.get('id')
+        try:
+            room = ChennaiRooms.objects.get(id=room_id)
+            
+            # Reset the room fields
+            room.availability_status = False  # Set back to Available
+            room.Occupied_by = "N/A"
+            room.OccuipedTiming = "N/A"
+            room.ReleaseTiming = "N/A"
+            room.BookedBy = "N/A"
+            room.save()
+            
+            return Response({'message': 'Booking cancelled successfully'}, status=200)
+        except ChennaiRooms.DoesNotExist:
+            return Response({'message': 'Room not found'}, status=404)
+        except Exception as e:
+            return Response({'message': str(e)}, status=400)
+    @action(detail=False, methods=['post'])
+    def edit_booking(self, request):
+        room_id = request.data.get('id')
+        try:
+            room = ChennaiRooms.objects.get(id=room_id)
+            
+            # Update only the time and date related fields
+            room.OccuipedTiming = request.data.get('BookingTime')
+            room.ReleaseTiming = request.data.get('ReleaseTime')
+            # If you add a date field to your model, update it here too:
+            # room.date = request.data.get('date')
+            
+            room.save()
+            return Response({'message': 'Booking updated successfully'}, status=200)
+        except ChennaiRooms.DoesNotExist:
+            return Response({'message': 'Room not found'}, status=404)
+        except Exception as e:
+            return Response({'message': str(e)}, status=400)
+class BookingHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BookingHistory.objects.all().order_by('-id') # Latest first
+    serializer_class = BookingHistorySerializer # You'll need to create this serializer
 
+
+
+# class SeatViewSet(viewsets.ModelViewSet):
+#     queryset = OfficeSeat.objects.all()
+#     serializer_class = OfficeSeatSerializers
+
+#     def list(self, request, *args, **kwargs):
+#         # 1. Get current local time
+#         now = timezone.localtime(timezone.now()).time()
+        
+#         # 2. Find seats that are occupied but their release time has passed
+#         # We look for seats where is_available is False AND release_time <= current time
+#         expired_seats = OfficeSeat.objects.filter(
+#             is_available=False, 
+#             release_time__lte=now
+#         )
+        
+#         # 3. Reset these seats back to available
+#         if expired_seats.exists():
+#             expired_seats.update(
+#                 is_available=True,
+#                 booked_by_name="",
+#                 booked_by_email="",
+#                 team_name="",
+#                 release_time=None
+#             )
+
+#         # 4. Return the updated list to React
+#         queryset = self.get_queryset()
+#         serializer = self.get_serializer(queryset, many=True)
+#         return Response(serializer.data)
+
+#     @action(detail=False, methods=['post'])
+#     def book_multiple_seats(self, request):
+#         seat_ids = request.data.get('seat_ids', []) # Expecting a list: ["B1-S1", "B1-S2"]
+#         name = request.data.get('name')
+#         release_time = request.data.get('release_time')
+
+#         # Check if all requested seats are available first
+#         unavailable = OfficeSeat.objects.filter(seat_id__in=seat_ids, is_available=False)
+#         if unavailable.exists():
+#             return Response({'message': 'Some seats are already taken!'}, status=400)
+
+#         # Update all seats in the list
+#         OfficeSeat.objects.filter(seat_id__in=seat_ids).update(
+#             is_available=False,
+#             booked_by_name=name,
+#             release_time=release_time
+#         )
+        
+#         return Response({'message': f'{len(seat_ids)} seats booked successfully!'}, status=200)
+class SeatViewSet(viewsets.ModelViewSet):
+    queryset = OfficeSeat.objects.all()
+    serializer_class = OfficeSeatSerializers
+
+    # GET Method: Fetches all data and auto-releases expired seats
+    def list(self, request, *args, **kwargs):
+        now = timezone.localtime(timezone.now()).time()
+        expired_seats = OfficeSeat.objects.filter(is_available=False, release_time__lte=now)
+        if expired_seats.exists():
+            expired_seats.update(
+                is_available=True, booked_by_name="", booked_by_email="", 
+                team_name="", release_time=None, start_time=None, booking_date=None
+            )
+        return super().list(request, *args, **kwargs)
+
+    # POST: Book multiple seats
+    @action(detail=False, methods=['post'])
+    def book_multiple_seats(self, request):
+        seat_ids = request.data.get('seat_ids', [])
+        OfficeSeat.objects.filter(seat_id__in=seat_ids).update(
+            is_available=False,
+            booked_by_name=request.data.get('booked_by_name'),
+            booked_by_email=request.data.get('booked_by_email'),
+            team_name=request.data.get('team_name '),
+            booking_date=request.data.get('booking_date'),
+            start_time=request.data.get('start_time'),
+            release_time=request.data.get('release_time')
+        )
+        return Response({'message': 'Seats booked successfully!'}, status=200)
+
+    # POST: Cancel specific seat
+    @action(detail=False, methods=['post'])
+    def cancel_booking(self, request):
+        seat_id = request.data.get('seat_id')
+        OfficeSeat.objects.filter(seat_id=seat_id).update(
+            is_available=True, booked_by_name="", booked_by_email="", 
+            team_name="", release_time=None, start_time=None, booking_date=None
+        )
+        return Response({'message': f'Seat {seat_id} is now available.'}, status=200)
+
+    @action(detail=False, methods=['post'])
+    def edit_booking(self, request):
+        seat_id = request.data.get('seat_id')
+        try:
+            seat = OfficeSeat.objects.get(seat_id=seat_id)
+            seat.start_time = request.data.get('start_time', seat.start_time)
+            seat.release_time = request.data.get('release_time', seat.release_time)
+            seat.booking_date = request.data.get('booking_date', seat.booking_date)
+            seat.booked_by_name = request.data.get('booked_by_name', seat.booked_by_name)
+            seat.team_name = request.data.get('team_name', seat.team_name)
+            seat.booked_by_email = request.data.get('booked_by_email', seat.booked_by_email)
+            seat.save()
+            return Response({'message': f'Seat {seat_id} booking updated successfully.'}, status=200)
+        except OfficeSeat.DoesNotExist:
+            return Response({'message': 'Seat not found'}, status=404)
+        except Exception as e:
+            return Response({'message': str(e)}, status=400)
 
 class BangaloreRoomViewSet(viewsets.ModelViewSet):
 

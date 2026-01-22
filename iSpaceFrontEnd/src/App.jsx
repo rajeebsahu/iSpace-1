@@ -9,6 +9,7 @@ import Bookings from './Bookings/Bookings'
 import AdminPanelBooking from './Bookings/AdminPanelBooking'
 import CalendarView  from './Bookings/CalenderView'  
 import ContactUs from './ContactUs/ContactUs'
+import ManagerLevelSeatBooking from './Bookings/ManagerLevelSeatBooking'
 import { BrowserRouter,Route, Routes } from 'react-router-dom';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/adminpanel" element={<AdminPanelBooking />} />
         <Route path="/calendarview" element={<CalendarView />} />
         <Route path='/contactUs' element={<ContactUs />} />
+        <Route path='/managerlevelseatbooking' element={<ManagerLevelSeatBooking />} />
       </Routes>
     </BrowserRouter>
     </>
