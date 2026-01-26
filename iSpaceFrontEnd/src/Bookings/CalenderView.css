@@ -9,6 +9,7 @@
   background: white;
 }
 
+
 /* Customizing the Scheduler's look to match your app */
 .scheduler-container [class*="StyledSchedulerFrame"] {
     padding: 10px;

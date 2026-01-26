@@ -256,16 +256,23 @@ const AdminPanel = () => {
     return (
         <div className="admin-page">
             <header className="admin-header">
-                <div className="header-content">
-                    <h1>Admin Command Center</h1>
-                    <Link to="/adminlogin" className="btn-secondary">LogOut</Link>
-                </div>
-            </header>
+    <div className="header-content">
+        <div className='headerText'>
+            <h1>Admin Command Center</h1>
+            <p>System Overview & Control</p>
+        </div>
+        
+        <div className='headerBtnGroup'>
+            <Link to="/managerlevelseatbooking" className="btn-secondary">Book Seats</Link>
+            <Link to="/adminlogin" className="btn-logout">LogOut</Link>
+        </div>
+    </div>
+</header>
 
             <main className="admin-container">
                 {/* SECTION 1: ADMIN BOOKING FORM */}
                 <section className="admin-card booking-form-area">
-                    <h2 className="card-title">Create Rapid Booking</h2>
+                    <h2 className="card-title">Create Rapid Room Booking</h2>
                     <div className="form-grid">
                         <div className="form-group">
                             <label>Room Category</label>
@@ -311,7 +318,7 @@ const AdminPanel = () => {
                 </section>
 
                 {/* SECTION 2: ROOM MANAGEMENT TABLE */}
-                <section className="admin-card table-area">
+                <section className="admin-card1 table-area">
                     <h2 className="card-title">Live Room Management</h2>
                     <div className="table-responsive">
                         <table className="admin-table">
