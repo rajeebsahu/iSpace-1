@@ -81,48 +81,142 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
     queryset = ChennaiRooms.objects.all()
     serializer_class = ChennaiRoomsSerializers
 
-    def list(self, request, *args, **kwargs):
-        """Checks and resets every room whenever the list is requested"""
-        rooms = ChennaiRooms.objects.all()
-        for room in rooms:
-            room.check_and_reset()
+    # def list(self, request, *args, **kwargs):
+    #     """Checks and resets every room whenever the list is requested"""
+    #     rooms = ChennaiRooms.objects.all()
+    #     for room in rooms:
+    #         room.check_and_reset()
         
+    #     serializer = self.get_serializer(rooms, many=True)
+    #     return Response(serializer.data)
+
+    # @action(detail=False, methods=['post'])
+    # def bookroom(self, request):
+    #     # CHANGE: Look for 'id' instead of 'room_name'
+    #     room_id = request.data.get('id')
+        
+        
+    #     try:
+    #         # CHANGE: Filter by unique primary key ID
+    #         room = ChennaiRooms.objects.get(id=room_id)
+    #         room.check_and_reset()
+            
+    #         # Logic check: In your model, availability_status=False means AVAILABLE
+    #         # If status is True, it is already occupied.
+    #         if room.availability_status == True:
+    #             return Response({'message': 'Room is already occupied'}, status=400)
+            
+    #         # Update the existing room row
+    #         room.MainRoomName = request.data.get('MainRoom', 'Training Room')
+    #         room.Occupied_by = request.data.get('occupied_by', 'Guest')
+    #         room.OccuipedTiming = request.data.get('BookingTime')
+    #         room.ReleaseTiming = request.data.get('ReleaseTime')
+    #         room.availability_status = True  # Mark as occupied
+    #         room.BookedBy = request.data.get('Bookedby', 'Employee')
+    #         room.save()
+            
+    #         serializer = ChennaiRoomsSerializers(room)
+    #         return Response(serializer.data, status=200)
+
+    #     except ChennaiRooms.DoesNotExist:
+    #         return Response({'message': 'Room not found'}, status=404)
+    #     except Exception as e:
+    #         # This catches the MultipleObjectsReturned error if you kept using room_name
+    #         return Response({'message': str(e)}, status=400)
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import ChennaiRooms
+from .serializers import ChennaiRoomsSerializers
+import datetime
+from .ai_utilities import predict_specific_booking
+
+class ChennaiRoomViewSet(viewsets.ModelViewSet):
+    queryset = ChennaiRooms.objects.all()
+    serializer_class = ChennaiRoomsSerializers
+
+    def list(self, request, *args, **kwargs):
+        """Checks every room and promotes future bookings if time is up"""
+        rooms = ChennaiRooms.objects.all()
+        now = datetime.datetime.now()
+        current_time_str = now.strftime("%H:%M")
+
+        for room in rooms:
+            # room = ChennaiRooms.objects.get(id=room_id)
+            room.check_and_reset() 
+
+            # 1. Promote Next Booking if current one is finished
+            # We check if room is occupied and if the release time has passed
+            if room.availability_status and room.ReleaseTiming and room.ReleaseTiming != "N/A":
+                if current_time_str >= room.ReleaseTiming:
+                    print("hiiiRoom")
+                    if room.FutureBookings and len(room.FutureBookings) > 0:
+                        # Pick the next booking from the JSON list
+                        next_booking = room.FutureBookings.pop(0)
+                        
+                        room.Occupied_by = next_booking.get('occupied_by')
+                        room.OccuipedTiming = next_booking.get('BookingTime')
+                        room.ReleaseTiming = next_booking.get('ReleaseTime')
+                        room.BookedBy = next_booking.get('Bookedby')
+                        room.availability_status = True
+                    else:
+                        print("HelloRoom")
+                        # No more bookings in queue, make room free
+                        room.availability_status = False
+                        room.Occupied_by = "N/A"
+                        room.OccuipedTiming = "N/A"
+                        room.ReleaseTiming = "N/A"
+                        room.BookedBy = "N/A"
+                    room.save()
+            
+            # 2. Run your existing reset logic if needed
+                # room.check_and_reset() 
+
         serializer = self.get_serializer(rooms, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def bookroom(self, request):
-        # CHANGE: Look for 'id' instead of 'room_name'
         room_id = request.data.get('id')
-        
-        
+        new_booking_data = {
+            'MainRoom': request.data.get('MainRoom'),
+            'occupied_by': request.data.get('occupied_by'),
+            'BookingTime': request.data.get('BookingTime'),
+            'ReleaseTime': request.data.get('ReleaseTime'),
+            'Bookedby': request.data.get('Bookedby'),
+            'date': request.data.get('date')
+        }
+
         try:
-            # CHANGE: Filter by unique primary key ID
             room = ChennaiRooms.objects.get(id=room_id)
-            room.check_and_reset()
             
-            # Logic check: In your model, availability_status=False means AVAILABLE
-            # If status is True, it is already occupied.
+            # If room is ALREADY occupied, add to FutureBookings queue
             if room.availability_status == True:
-                return Response({'message': 'Room is already occupied'}, status=400)
+                # Ensure FutureBookings is initialized as a list
+                if not isinstance(room.FutureBookings, list):
+                    room.FutureBookings = []
+                
+                room.FutureBookings.append(new_booking_data)
+                room.save()
+                return Response({
+                    'message': 'Room is occupied. Added to Future Bookings queue.',
+                    'queue_position': len(room.FutureBookings)
+                }, status=201)
             
-            # Update the existing room row
-            room.MainRoomName = request.data.get('MainRoom', 'Training Room')
-            room.Occupied_by = request.data.get('occupied_by', 'Guest')
-            room.OccuipedTiming = request.data.get('BookingTime')
-            room.ReleaseTiming = request.data.get('ReleaseTime')
-            room.availability_status = True  # Mark as occupied
-            room.BookedBy = request.data.get('Bookedby', 'Employee')
+            # If room is FREE, book it normally
+            room.MainRoomName = new_booking_data['MainRoom']
+            room.Occupied_by = new_booking_data['occupied_by']
+            room.OccuipedTiming = new_booking_data['BookingTime']
+            room.ReleaseTiming = new_booking_data['ReleaseTime']
+            room.BookedBy = new_booking_data['Bookedby']
+            room.availability_status = True
             room.save()
             
-            serializer = ChennaiRoomsSerializers(room)
-            return Response(serializer.data, status=200)
+            return Response({'message': 'Room booked successfully!'}, status=200)
 
         except ChennaiRooms.DoesNotExist:
             return Response({'message': 'Room not found'}, status=404)
-        except Exception as e:
-            # This catches the MultipleObjectsReturned error if you kept using room_name
-            return Response({'message': str(e)}, status=400)
     
     @action(detail=False, methods=['post'])
     def cancel_booking(self, request):
@@ -161,6 +255,20 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Room not found'}, status=404)
         except Exception as e:
             return Response({'message': str(e)}, status=400)
+    
+    @action(detail=False, methods=['get'])
+    def get_ai_suggestions(self, request):
+        user_email = request.query_params.get('email')
+        room = request.query_params.get('room')
+        date = request.query_params.get('date')
+        time = request.query_params.get('time')
+    
+        if not all([user_email, room, date, time]):
+            return Response({"error": "Missing parameters"}, status=400)
+    
+        prediction = predict_specific_booking(user_email, room, date, time)
+        return Response(prediction, status=200)
+
 class BookingHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = BookingHistory.objects.all().order_by('-id') # Latest first
     serializer_class = BookingHistorySerializer # You'll need to create this serializer
@@ -216,37 +324,104 @@ class BookingHistoryViewSet(viewsets.ReadOnlyModelViewSet):
 #         )
         
 #         return Response({'message': f'{len(seat_ids)} seats booked successfully!'}, status=200)
+# class SeatViewSet(viewsets.ModelViewSet):
+#     queryset = OfficeSeat.objects.all()
+#     serializer_class = OfficeSeatSerializers
+
+#     # GET Method: Fetches all data and auto-releases expired seats
+#     def list(self, request, *args, **kwargs):
+#         now = timezone.localtime(timezone.now()).time()
+#         expired_seats = OfficeSeat.objects.filter(is_available=False, release_time__lte=now)
+#         if expired_seats.exists():
+#             expired_seats.update(
+#                 is_available=True, booked_by_name="", booked_by_email="", 
+#                 team_name="", release_time=None, start_time=None, booking_date=None
+#             )
+#         return super().list(request, *args, **kwargs)
+
+#     # POST: Book multiple seats
+#     @action(detail=False, methods=['post'])
+#     def book_multiple_seats(self, request):
+#         seat_ids = request.data.get('seat_ids', [])
+#         OfficeSeat.objects.filter(seat_id__in=seat_ids).update(
+#             is_available=False,
+#             booked_by_name=request.data.get('booked_by_name'),
+#             booked_by_email=request.data.get('booked_by_email'),
+#             team_name=request.data.get('team_name '),
+#             booking_date=request.data.get('booking_date'),
+#             start_time=request.data.get('start_time'),
+#             release_time=request.data.get('release_time')
+#         )
+#         return Response({'message': 'Seats booked successfully!'}, status=200)
+
+#     # POST: Cancel specific seat
+#     @action(detail=False, methods=['post'])
+#     def cancel_booking(self, request):
+#         seat_id = request.data.get('seat_id')
+#         OfficeSeat.objects.filter(seat_id=seat_id).update(
+#             is_available=True, booked_by_name="", booked_by_email="", 
+#             team_name="", release_time=None, start_time=None, booking_date=None
+#         )
+#         return Response({'message': f'Seat {seat_id} is now available.'}, status=200)
+
+#     @action(detail=False, methods=['post'])
+#     def edit_booking(self, request):
+#         seat_id = request.data.get('seat_id')
+#         try:
+#             seat = OfficeSeat.objects.get(seat_id=seat_id)
+#             seat.start_time = request.data.get('start_time', seat.start_time)
+#             seat.release_time = request.data.get('release_time', seat.release_time)
+#             seat.booking_date = request.data.get('booking_date', seat.booking_date)
+#             seat.booked_by_name = request.data.get('booked_by_name', seat.booked_by_name)
+#             seat.team_name = request.data.get('team_name', seat.team_name)
+#             seat.booked_by_email = request.data.get('booked_by_email', seat.booked_by_email)
+#             seat.save()
+#             return Response({'message': f'Seat {seat_id} booking updated successfully.'}, status=200)
+#         except OfficeSeat.DoesNotExist:
+#             return Response({'message': 'Seat not found'}, status=404)
+#         except Exception as e:
+#             return Response({'message': str(e)}, status=400)
 class SeatViewSet(viewsets.ModelViewSet):
     queryset = OfficeSeat.objects.all()
     serializer_class = OfficeSeatSerializers
 
-    # GET Method: Fetches all data and auto-releases expired seats
     def list(self, request, *args, **kwargs):
-        now = timezone.localtime(timezone.now()).time()
-        expired_seats = OfficeSeat.objects.filter(is_available=False, release_time__lte=now)
-        if expired_seats.exists():
-            expired_seats.update(
-                is_available=True, booked_by_name="", booked_by_email="", 
-                team_name="", release_time=None, start_time=None, booking_date=None
-            )
+        # Trigger the auto-release/promotion logic for all seats
+        seats = OfficeSeat.objects.all()
+        for seat in seats:
+            seat.check_and_release()
         return super().list(request, *args, **kwargs)
 
-    # POST: Book multiple seats
     @action(detail=False, methods=['post'])
     def book_multiple_seats(self, request):
         seat_ids = request.data.get('seat_ids', [])
-        OfficeSeat.objects.filter(seat_id__in=seat_ids).update(
-            is_available=False,
-            booked_by_name=request.data.get('booked_by_name'),
-            booked_by_email=request.data.get('booked_by_email'),
-            team_name=request.data.get('team_name '),
-            booking_date=request.data.get('booking_date'),
-            start_time=request.data.get('start_time'),
-            release_time=request.data.get('release_time')
-        )
-        return Response({'message': 'Seats booked successfully!'}, status=200)
+        new_booking = {
+            'booked_by_name': request.data.get('booked_by_name'),
+            'booked_by_email': request.data.get('booked_by_email'),
+            'team_name': request.data.get('team_name'),
+            'booking_date': request.data.get('booking_date'),
+            'start_time': request.data.get('start_time'),
+            'release_time': request.data.get('release_time')
+        }
 
-    # POST: Cancel specific seat
+        for s_id in seat_ids:
+            seat = OfficeSeat.objects.get(seat_id=s_id)
+            if not seat.is_available:
+                # Add to Queue
+                if not isinstance(seat.FutureBookings, list):
+                    seat.FutureBookings = []
+                seat.FutureBookings.append(new_booking)
+                seat.save()
+            else:
+                # Book immediately
+                OfficeSeat.objects.filter(seat_id=s_id).update(
+                    is_available=False,
+                    **new_booking
+                )
+        
+        return Response({'message': 'Bookings processed (some may be queued).'}, status=200)
+
+        # POST: Cancel specific seat
     @action(detail=False, methods=['post'])
     def cancel_booking(self, request):
         seat_id = request.data.get('seat_id')
@@ -273,7 +448,6 @@ class SeatViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Seat not found'}, status=404)
         except Exception as e:
             return Response({'message': str(e)}, status=400)
-
 class BangaloreRoomViewSet(viewsets.ModelViewSet):
 
     queryset = BangaloreRooms.objects.all()

@@ -1,0 +1,169 @@
+/* Ai.css */
+.ai-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.ai-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.ai-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.ai-header p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+/* Prediction Card */
+.prediction-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f4f8 100%);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    border-left: 8px solid #3498db;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-badge {
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    background: #3498db;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.highlight {
+    color: #3498db;
+    font-weight: bold;
+}
+
+.confidence {
+    font-size: 0.9rem;
+    color: #27ae60;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.reason {
+    background: rgba(52, 152, 219, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-style: italic;
+}
+
+/* Actions */
+.ai-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-book-ai {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-book-ai:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.btn-ignore {
+    background: transparent;
+    color: #95a5a6;
+    border: 1px solid #bdc3c7;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-ignore:hover {
+    background: #ecf0f1;
+}
+
+/* Availability Chart Section */
+.availability-prediction {
+    margin-top: 50px;
+    padding: 20px;
+}
+
+.chart-placeholder {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 200px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-top: 20px;
+}
+
+.bar {
+    width: 60px;
+    border-radius: 5px 5px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    transition: 0.5s;
+}
+
+.bar span {
+    position: absolute;
+    bottom: -30px;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+}
+
+.bar.busy {
+    background: #e74c3c;
+    opacity: 0.7;
+}
+
+.bar.available {
+    background: #2ecc71;
+    opacity: 0.7;
+}
+
+.note {
+    font-size: 0.8rem;
+    color: #95a5a6;
+    margin-top: 40px;
+    text-align: center;
+}
+
+/* Loader */
+.ai-loader {
+    text-align: center;
+    margin-top: 100px;
+    font-size: 1.2rem;
+    color: #3498db;
+    font-weight: bold;
+}

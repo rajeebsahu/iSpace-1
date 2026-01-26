@@ -10,6 +10,7 @@ import AdminPanelBooking from './Bookings/AdminPanelBooking'
 import CalendarView  from './Bookings/CalenderView'  
 import ContactUs from './ContactUs/ContactUs'
 import ManagerLevelSeatBooking from './Bookings/ManagerLevelSeatBooking'
+import Ai from './Ai/Ai'
 import { BrowserRouter,Route, Routes } from 'react-router-dom';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/calendarview" element={<CalendarView />} />
         <Route path='/contactUs' element={<ContactUs />} />
         <Route path='/managerlevelseatbooking' element={<ManagerLevelSeatBooking />} />
+        <Route path='/Ai' element={<Ai></Ai>}/>
       </Routes>
     </BrowserRouter>
     </>
