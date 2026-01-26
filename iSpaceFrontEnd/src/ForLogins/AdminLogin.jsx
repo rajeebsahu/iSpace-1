@@ -11,11 +11,10 @@ const AdminLogin = () => {
   const [isAdminView, setIsAdminView] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   // Handle Admin Login
   const handleAdminLogin = (e) => {
     e.preventDefault(); // Prevent page refresh
-    Axios.post('https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/admin/login/', {
+    Axios.post('https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/admin/login/', {
       email: email,
       password: password,
     })
@@ -33,7 +32,7 @@ const AdminLogin = () => {
   // Handle Employee Login
   const handleEmployeeLogin = (e) => {
     e.preventDefault(); // Prevent page refresh
-    Axios.post('https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/Employees/login/', {
+    Axios.post('https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/Employees/login/', {
       email: email,
       password: password,
     })

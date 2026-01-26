@@ -18,13 +18,13 @@ const ManagerLevelSeatBooking = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 10;
 
-    const API_BASE = "https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/Seat/";
+    const API_BASE = "https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/Seat/";
 
     // useEffect(() => { fetchSeatStatus(); }, []);
     ; // This runs every time bookedSeats changes
 
     const fetchSeatStatus = () => {
-        Axios.get("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/Seat/",{
+        Axios.get("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/Seat/",{
         }).then((res)=>{
             setBookedSeats(res.data)
         })
@@ -34,7 +34,7 @@ const ManagerLevelSeatBooking = () => {
       }, []);
 
     const getHistoryChennaiRoom = ()=>{
-    Axios.get("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/BookingHistory/",{
+    Axios.get("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/BookingHistory/",{
     }).then((res)=>{
       setBookingHistoryData(res.data)
     })

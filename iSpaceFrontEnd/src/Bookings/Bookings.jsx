@@ -50,7 +50,7 @@ const Booking = () => {
 
 
   const getChennaiRoom = ()=>{
-    Axios.get("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/",{
+    Axios.get("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/ChennaiRoom/",{
     }).then((res)=>{
       setChennaiRoomData(res.data)
     })
@@ -63,7 +63,7 @@ const Booking = () => {
 
 
   const getHistoryChennaiRoom = ()=>{
-    Axios.get("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/BookingHistory/",{
+    Axios.get("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/BookingHistory/",{
     }).then((res)=>{
       setBookingHistoryData(res.data)
     })
@@ -91,7 +91,7 @@ const Booking = () => {
   
 
 const BookingRoom = () => {
-    Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/bookroom/", {
+    Axios.post("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/ChennaiRoom/bookroom/", {
         id: AvailableRoom, // Sending the ID picked from the dropdown
         date: date,
         BookingTime: BookingTime,
@@ -113,7 +113,7 @@ const BookingRoom = () => {
 
 const CancelBooking = (id) => {
     if (window.confirm("Are you sure you want to cancel this booking?")) {
-        Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/cancel_booking/", {
+        Axios.post("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/ChennaiRoom/cancel_booking/", {
             id: id
         })
         .then((res) => {
@@ -128,7 +128,7 @@ const CancelBooking = (id) => {
 console.log("Manages access ",ManagerAccess)
 
 const handleUpdate = (id) => {
-    Axios.post("https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/edit_booking/", {
+    Axios.post("https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/ChennaiRoom/edit_booking/", {
         id: id,
         BookingTime: newStartTime,
         ReleaseTime: newEndTime,

@@ -173,7 +173,7 @@ const AdminPanel = () => {
         occupied_by: ''
     });
 
-    const API_BASE = "https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/";
+    const API_BASE = "https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/ChennaiRoom/";
 
     const fetchAllRooms = () => {
         Axios.get(API_BASE).then(res => setAllRooms(res.data));

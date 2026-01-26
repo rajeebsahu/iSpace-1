@@ -148,9 +148,11 @@ DEBUG = True
 
 # 1. ALLOWED HOSTS: Added your Codespace backend URL
 ALLOWED_HOSTS = [
+    'congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev',
     'humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev',
     '127.0.0.1',
-    'localhost'
+    'localhost',
+    
 ]
 
 # Application definition
@@ -232,12 +234,17 @@ USE_TZ = True
 
 # 4. CORS & CSRF TRUSTED ORIGINS
 # This allows the React app on port 5173 to communicate with Django on port 8000
+# CORS_ALLOWED_ORIGINS = [
+#     # "https://humble-orbit-v4pjxqxgw9qcw9vg-5173.app.github.dev",
+#     "https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev"
+# ]
 CORS_ALLOWED_ORIGINS = [
-    "https://humble-orbit-v4pjxqxgw9qcw9vg-5173.app.github.dev",
+    "https://congenial-parakeet-94vvg49gwrvhqw4-5173.app.github.dev",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://humble-orbit-v4pjxqxgw9qcw9vg-5173.app.github.dev",
+    # "https://humble-orbit-v4pjxqxgw9qcw9vg-5173.app.github.dev",
+    "https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev"
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False # Setting to False since we defined specific origins
