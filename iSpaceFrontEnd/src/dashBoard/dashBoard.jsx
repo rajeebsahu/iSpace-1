@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Booking from '../Bookings/Bookings';
 import ContactUs from '../ContactUs/ContactUs';
 import { useState, useEffect } from 'react';
+import LogoImg from '../assets/Logo.png'; 
 const Dashboard = () => {
   // const email=localStorage.getItem("email")
   const [email,SetEmail]=useState("")
@@ -32,7 +33,7 @@ const Dashboard = () => {
       {/* Navigation Bar */}
       <nav className="navbar">
         <div className="logo">
-          <span className="logo-icon">S</span>PACE
+          <span className="logo-icon"><img src={LogoImg} style={{borderRadius:"5px"}}></img></span>
         </div>
         <ul className="nav-links">
           <li><a href="#home">Home</a></li>
@@ -56,6 +57,7 @@ const Dashboard = () => {
 
       {/* Hero Content */}
       <div className="hero-content">
+        <img src=''></img>
         <h1>Find Your Perfect Workspace</h1>
         <button className="get-started-btn"><Link to="/bookings">Get Started!</Link></button>
       </div>

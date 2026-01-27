@@ -147,44 +147,91 @@ const handleBooking = (isQueue = false, specificSeatId = null) => {
         });
 };
 console.log(savedEmail)
+// const renderBlock = (blockId, count, startX, startY, cols) => {
+//     return [...Array(count)].map((_, i) => {
+//         const seatId = `${blockId}-S${i + 1}`;
+        
+//         // Find if this seat exists in your API data
+//         const seatData = bookedSeats.find(s => s.seat_id === seatId);
+        
+//         // IMPORTANT: In your model, is_available: false means it's TAKEN.
+//         // If seatData doesn't exist yet, we treat it as Available.
+//         const isOccupied = seatData ? seatData.is_available === false : false;
+//         const isSelected = selectedSeats.includes(seatId);
+        
+//         let seatClass = "seat ";
+//         if (isOccupied) {
+//             seatClass += "seat-booked"; // This should be RED
+//         } else if (isSelected) {
+//             seatClass += "seat-selected"; // This should be ORANGE
+//         } else {
+//             seatClass += "seat-available"; // This should be GREEN
+//         }
+
+//         return (
+//             <rect 
+//                 key={seatId} 
+//                 x={startX + (i % cols) * 25} 
+//                 y={startY + Math.floor(i / cols) * 25}
+//                 width="20" 
+//                 height="15" 
+//                 className={seatClass} 
+//                 // Only allow clicking if NOT occupied
+//                 onClick={() => !isOccupied && handleSeatClick(seatId)} 
+//                 style={{ cursor: isOccupied ? 'not-allowed' : 'pointer' }}
+//             />
+//         );
+//     });
+// };
 const renderBlock = (blockId, count, startX, startY, cols) => {
     return [...Array(count)].map((_, i) => {
-        const seatId = `${blockId}-S${i + 1}`;
+        const seatNumber = i + 1;
+        const seatId = `${blockId}-S${seatNumber}`;
+        const seatLabel = `S${seatNumber}`; // Individual seat name
         
-        // Find if this seat exists in your API data
         const seatData = bookedSeats.find(s => s.seat_id === seatId);
-        
-        // IMPORTANT: In your model, is_available: false means it's TAKEN.
-        // If seatData doesn't exist yet, we treat it as Available.
         const isOccupied = seatData ? seatData.is_available === false : false;
         const isSelected = selectedSeats.includes(seatId);
         
         let seatClass = "seat ";
         if (isOccupied) {
-            seatClass += "seat-booked"; // This should be RED
+            seatClass += "seat-booked"; 
         } else if (isSelected) {
-            seatClass += "seat-selected"; // This should be ORANGE
+            seatClass += "seat-selected"; 
         } else {
-            seatClass += "seat-available"; // This should be GREEN
+            seatClass += "seat-available"; 
         }
 
+        const posX = startX + (i % cols) * 35; // Increased spacing to fit text
+        const posY = startY + Math.floor(i / cols) * 35;
+
         return (
-            <rect 
-                key={seatId} 
-                x={startX + (i % cols) * 25} 
-                y={startY + Math.floor(i / cols) * 25}
-                width="20" 
-                height="15" 
-                className={seatClass} 
-                // Only allow clicking if NOT occupied
-                onClick={() => !isOccupied && handleSeatClick(seatId)} 
-                style={{ cursor: isOccupied ? 'not-allowed' : 'pointer' }}
-            />
+            <g key={seatId}>
+                {/* Seat Rectangle */}
+                <rect 
+                    x={posX} 
+                    y={posY}
+                    width="24" 
+                    height="20" 
+                    className={seatClass} 
+                    onClick={() => !isOccupied && handleSeatClick(seatId)} 
+                    style={{ cursor: isOccupied ? 'not-allowed' : 'pointer' }}
+                />
+                {/* Seat Name Label (e.g., S1, S2) */}
+                <text 
+                    x={posX + 12.5} 
+                    y={posY + 13} 
+                    textAnchor="middle" 
+                    style={{ fontSize: '8px', fill: isOccupied ? 'white' : 'black', pointerEvents: 'none' }}
+                >
+                    {seatLabel}
+                </text>
+            </g>
         );
     });
-};
-    return (
-        <div className="seat-booking-container">
+};    
+return (
+        <div className="seat-booking-container" >
 
             <main className="main-content">
                 {/* <header className="content-header"><h1>Manager Level Seat Booking</h1></header> */}
@@ -210,10 +257,10 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
                         <input type="text" placeholder='EndTime *' onFocus={(e) => (e.target.type = "time")} onChange={e => setFormData({...formData, releaseTime: e.target.value})} value={formData.releaseTime} />
                     </div>
 
-                    <div className="map-card" style={{ width: '100%', overflow: 'hidden' }}>
-    <svg viewBox="0 0 1000 350" className="office-svg" style={{ width: '100%', height: 'auto' }}>
+                    <div className="map-card" style={{ width: '94%', overflow: 'hidden',margin:'19px' }}>
+    <svg viewBox="0 0 1000 350" className="office-svg" style={{ width: '100%', height: 'auto'}}>
         {/* Floor Background */}
-        <rect x="0" y="0" width="1000" height="350" fill="#fcfcfc" stroke="#eee" />
+        <rect x="0" y="0" width="1000" height="350" fill="#ebdecc" stroke="#d51b1b" />
 
         {/* --- SPECIALIZED ROOMS --- */}
         <rect x="20" y="20" width="300" height="70" fill="#e3f2fd" stroke="#2196f3" strokeWidth="2" />
@@ -230,7 +277,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
         {/* Block 1 */}
         <text x="20" y="125" className="room-label">Block 1</text>
         <rect x="20" y="130" width="170" height="200" fill="none" stroke="#ccc" />
-        {renderBlock('B1', 15, 30, 145, 5)}
+        {renderBlock('B1', 12, 30, 145, 4)}
 
         {/* Block 2 */}
         <text x="215" y="125" className="room-label">Block 2</text>
@@ -245,7 +292,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
         {/* Block 4 */}
         <text x="605" y="125" className="room-label">Block 4</text>
         <rect x="605" y="130" width="170" height="200" fill="none" stroke="#ccc" />
-        {renderBlock('B4', 25, 615, 145, 5)}
+        {renderBlock('B4', 18, 615, 145, 4)}
 
         {/* Block 5 */}
         <text x="800" y="125" className="room-label">Block 5</text>
@@ -254,7 +301,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
     </svg>
 </div>
 
-                    <div className="submit-area">
+                    <div className="submit-area" style={{margin:'19px'}}>
                         <button className="btn-submit" onClick={() => handleBooking(false)}>
                             Submit ({selectedSeats.length} Seats)
                         </button>
@@ -262,7 +309,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
                 </div>
                 <div>
                 {/* --- YOUR SEAT BOOKINGS SECTION --- */}
-<div>
+<div className='booking-list1'>
     <h3>Your Seat Bookings</h3>
     <ul className="booking-list">
         {bookedSeats
@@ -272,6 +319,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
                     <h5>SeatId : {seat.seat_id}</h5>
                     <h5>BookedBy : {seat.booked_by_name}</h5>
                     <h5>ReleaseTime : {seat.release_time}</h5>
+                    <h5>Team Name: {seat.team_name}</h5>
                     <button onClick={() => { 
                         setEditFormData({
                             ...EditformData, 
@@ -330,7 +378,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
                     <div className="input-group">
                         <label>Booked By Name:</label>
                         <input 
-                            type="text" 
+                      section      type="text" 
                             value={EditformData.bookedBy}
                             onChange={e => setEditFormData({...EditformData, bookedBy: e.target.value})} 
                         />
@@ -401,7 +449,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
                                             });
                                         }}
                                     >
-                                        Add to Queue
+                                        Book For Next Slot
                                     </button>
                                 </td>
                             </tr>
@@ -511,7 +559,7 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
     </div>
 </div>
 
-<div>
+<div className='PastBookings1'>
 <h2 className="section-title">Your Past Seat Booking Data</h2>
 <div className='PastBookings'>
   {savedEmail && (

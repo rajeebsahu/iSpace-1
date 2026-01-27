@@ -446,10 +446,11 @@ const handleUpdate = (id) => {
               
               {/* The Visual Card */}
               <div className="booking-card-item">
-                <h3>Booking Details for {Bookedby}</h3>
+                <h3 style={{color:'orange'}}>Booking Details for: {Bookedby}</h3>
                 <h3>Room: {data.room_name} ({data.MainRoomName})</h3>
                 <p><strong>Location:</strong> {data.location}</p>
                 <p><strong>Time:</strong> {data.OccuipedTiming} - {data.ReleaseTiming}</p>
+                <p><strong>Team:</strong>{data.Occupied_by}</p>
                 
                 <div className="card-actions">
                   <button className="btn-cancel" onClick={() => CancelBooking(data.id)}>Cancel Booking</button>

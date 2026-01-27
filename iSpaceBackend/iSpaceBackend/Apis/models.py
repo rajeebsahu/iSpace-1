@@ -104,16 +104,18 @@ class ChennaiRooms(models.Model):
 
                 # 2. Convert ReleaseTiming string "HH:MM" to a time object
                 release_time_obj = datetime.datetime.strptime(self.ReleaseTiming, "%H:%M").time()
+                print("ganesh1")
 
                 # 3. Check if the booking has expired
                 if current_time >= release_time_obj:
+                    print("ganesh")
                     # A. LOG TO HISTORY: Save the booking that just finished
                     BookingHistory.objects.create(
                         BookingType =  "RoomBooking",
                         room_name=self.room_name,
                         main_room_name=self.MainRoomName,
                         booked_by=self.BookedBy,
-                        occupied_by=self.occupied_by,
+                        occupied_by=self.Occupied_by,
                         start_time=self.OccuipedTiming,
                         end_time=self.ReleaseTiming,
                         location= self.location
@@ -155,7 +157,7 @@ class BookingHistory(models.Model):
     start_time = models.CharField(max_length=255)
     end_time = models.CharField(max_length=255)
     date = models.DateField(auto_now_add=True)
-    location = models.CharField(max_length=255,default="None")
+    location = models.CharField(max_length=255,default="Chennai")
 
 
 class BangaloreRooms(models.Model):
