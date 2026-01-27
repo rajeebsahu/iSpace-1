@@ -1,16 +1,74 @@
-.scheduler-container {
-  position: relative; /* CRITICAL for bitnoise-scheduler */
-  height: 80vh;
-  width: 100%;
-  margin-top: 20px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  background: white;
+.calendar-page {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
 }
 
+.calendar-container { max-width: 1400px; margin: 0 auto; }
 
-/* Customizing the Scheduler's look to match your app */
-.scheduler-container [class*="StyledSchedulerFrame"] {
-    padding: 10px;
+.calendar-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+}
+
+.nav-controls { display: flex; gap: 10px; }
+.nav-btn, .today-btn {
+  padding: 10px 18px; border-radius: 10px; border: 1px solid #e2e8f0;
+  background: white; cursor: pointer; font-weight: 600;
+}
+.today-btn { background: #4f46e5; color: white; border: none; }
+
+.calendar-main-content {
+  display: grid; grid-template-columns: 1fr 320px; gap: 30px;
+}
+
+.grid-card {
+  background: white; border-radius: 20px; border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden;
+  position: relative;
+}
+
+.grid-header {
+  display: grid; grid-template-columns: 80px repeat(7, 1fr);
+  background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+}
+
+.day-header { padding: 15px; text-align: center; border-left: 1px solid #e2e8f0; }
+.day-header.is-today { background: #eff6ff; color: #4f46e5; }
+
+.grid-scroll-area { height: 650px; overflow-y: auto; }
+.grid-row {
+  display: grid; grid-template-columns: 80px repeat(7, 1fr);
+  min-height: 90px; border-bottom: 1px solid #f1f5f9;
+}
+
+.time-label { font-size: 0.75rem; color: #94a3b8; text-align: right; padding: 10px; }
+.grid-cell { border-left: 1px solid #f1f5f9; position: relative; padding: 5px; }
+
+/* Booking Card Accents */
+.booking-slot {
+  font-size: 10px; padding: 8px; border-radius: 8px; margin-bottom: 4px;
+  display: flex; flex-direction: column; color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border-left: 4px solid rgba(0,0,0,0.2);
+}
+.room-accent { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.seat-accent { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+.slot-name { font-weight: 800; }
+.slot-user { opacity: 0.8; font-style: italic; }
+
+.mini-calendar { background: white; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; }
+.mini-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 4px; }
+.mini-date { font-size: 0.8rem; padding: 10px 0; border-radius: 10px; cursor: pointer; }
+.mini-date.active { background: #4f46e5; color: white; font-weight: 800; }
+
+.legend-card { margin-top: 25px; background: white; padding: 20px; border-radius: 20px; border: 1px solid #e2e8f0; }
+.dot { height: 12px; width: 12px; border-radius: 4px; margin-right: 12px; display: inline-block; }
+.room { background: #3b82f6; }
+.seat { background: #8b5cf6; }
+
+.refresh-btn { 
+  margin-top: 15px; width: 100%; padding: 10px; border-radius: 10px; 
+  background: #f1f5f9; border: none; font-weight: 600; cursor: pointer;
 }

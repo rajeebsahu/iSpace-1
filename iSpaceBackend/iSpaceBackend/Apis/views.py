@@ -74,7 +74,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # Catch any other weird errors
             return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 
 
 from rest_framework import viewsets, status
@@ -209,22 +209,42 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'message': str(e)}, status=400)
     
+    # @action(detail=False, methods=['get'])
+    # def get_ai_suggestions(self, request):
+    #     user_email = request.query_params.get('email')
+    #     room = request.query_params.get('room')
+    #     date = request.query_params.get('date')
+    #     time = request.query_params.get('time')
+    
+    #     if not all([user_email, room, date, time]):
+    #         return Response({"error": "Missing parameters"}, status=400)
+    
+    #     prediction = predict_specific_booking(user_email, room, date, time)
+    #     return Response(prediction, status=200)
+    # views.py
+
     @action(detail=False, methods=['get'])
     def get_ai_suggestions(self, request):
-        user_email = request.query_params.get('email')
+        # Get parameters from request
+        user_email = request.query_params.get('email') # Optional now
         room = request.query_params.get('room')
         date = request.query_params.get('date')
         time = request.query_params.get('time')
-    
-        if not all([user_email, room, date, time]):
-            return Response({"error": "Missing parameters"}, status=400)
-    
-        prediction = predict_specific_booking(user_email, room, date, time)
-        return Response(prediction, status=200)
 
-class BookingHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+        if not all([room, date, time]):
+            return Response({"error": "Missing parameters"}, status=400)
+        prediction = predict_specific_booking(room, date, time) 
+        return Response(prediction, status=200)
+        
+class BookingHistoryViewSet(viewsets.ModelViewSet):
     queryset = BookingHistory.objects.all().order_by('-id') # Latest first
     serializer_class = BookingHistorySerializer # You'll need to create this serializer
+    @action(detail=False, methods=['delete'])
+    def delete_all(self, request):
+        """Custom action to wipe all history records"""
+        count = BookingHistory.objects.all().count()
+        BookingHistory.objects.all().delete()
+        return Response({"message": f"Successfully deleted {count} records."}, status=200)
 
 
 class SeatViewSet(viewsets.ModelViewSet):

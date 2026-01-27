@@ -12,7 +12,7 @@ const Ai = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await Axios.get(`https://humble-orbit-v4pjxqxgw9qcw9vg-8000.app.github.dev/Apis/v1/ChennaiRoom/get_ai_suggestions/`, {
+            const res = await Axios.get(`https://congenial-parakeet-94vvg49gwrvhqw4-8000.app.github.dev/Apis/v1/ChennaiRoom/get_ai_suggestions/`, {
                 params: {
                     email: userEmail,
                     room: formData.room,
@@ -29,43 +29,60 @@ const Ai = () => {
     };
 
     return (
-        <div className="ai-container">
-            <header className="ai-header">
-                <h1>AI Booking Assistant</h1>
-                <p>Input your intended booking to see your usage probability</p>
-            </header>
-            
-            <section className="ai-input-form">
-                <form onSubmit={handlePredict} className="ai-form-grid">
-                    <div className="form-group">
-                        <label>Room or Seat Name</label>
-                        <input type="text" placeholder="e.g. MR1" onChange={(e)=>setFormData({...formData, room: e.target.value})} required />
-                    </div>
-                    <div className="form-group">
-                        <label>Date</label>
-                        <input type="date" onChange={(e)=>setFormData({...formData, date: e.target.value})} required />
-                    </div>
-                    <div className="form-group">
-                        <label>Time</label>
-                        <input type="time" onChange={(e)=>setFormData({...formData, time: e.target.value})} required />
-                    </div>
-                    <button type="submit" className="btn-ai-predict">
-                        {loading ? "Analyzing..." : "Analyze Pattern"}
-                    </button>
-                </form>
-            </section>
+        <div className="ai-page-wrapper">
+            <div className="ai-main-container">
+                <header className="ai-hero-section">
+                    <div className="ai-icon-pulse">🤖</div>
+                    <h1>AI Booking Assistant</h1>
+                    <p>Harnessing predictive patterns for your workspace efficiency</p>
+                </header>
+                
+                <section className="ai-card-glass">
+                    <form onSubmit={handlePredict} className="ai-form-layout">
+                        <div className="input-field-wrapper">
+                            <label>Workspace Resource</label>
+                            <input type="text" placeholder="e.g., MR1 or B1-S1" onChange={(e)=>setFormData({...formData, room: e.target.value})} required />
+                        </div>
+                        <div className="input-field-wrapper">
+                            <label>Target Date</label>
+                            <input type="date" onChange={(e)=>setFormData({...formData, date: e.target.value})} required />
+                        </div>
+                        <div className="input-field-wrapper">
+                            <label>Target Time</label>
+                            <input type="time" onChange={(e)=>setFormData({...formData, time: e.target.value})} required />
+                        </div>
+                        <button type="submit" className={`ai-submit-btn ${loading ? 'loading' : ''}`}>
+                            {loading ? <span className="spinner"></span> : "Generate Intelligence"}
+                        </button>
+                    </form>
+                </section>
 
-            {analysis && (
-                <div className="prediction-result-card">
-                    <h3>Analysis for {analysis.requested_room}</h3>
-                    <div className="gauge-container">
-                        <div className="gauge-bar" style={{width: `${analysis.probability_of_usage}%`, backgroundColor: analysis.probability_of_usage > 50 ? '#27ae60' : '#e67e22'}}></div>
+                {analysis && (
+                    <div className="analysis-result-anim">
+                        <div className="result-glass-card">
+                            <div className="result-header">
+                                <h3>Intelligence for <span>{analysis.requested_room}</span></h3>
+                                <div className="status-pill" data-status={analysis.status}>{analysis.status}</div>
+                            </div>
+                            
+                            <div className="usage-meter-section">
+                                <div className="usage-info">
+                                    <span>Usage Likelihood</span>
+                                    <span className="percentage">{analysis.probability_of_usage}%</span>
+                                </div>
+                                <div className="meter-container">
+                                    <div className="meter-fill" style={{width: `${analysis.probability_of_usage}%`}}></div>
+                                </div>
+                            </div>
+
+                            <div className="ai-insight-box">
+                                <span className="insight-label">💡 Predictive Insight</span>
+                                <p>{analysis.suggestion}</p>
+                            </div>
+                        </div>
                     </div>
-                    <p>Usage Likelihood: <strong>{analysis.probability_of_usage}%</strong></p>
-                    <p className="ai-status">Status: <strong>{analysis.status}</strong></p>
-                    <p className="ai-message">💡 {analysis.suggestion}</p>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
