@@ -7,12 +7,15 @@ const ManagerLevelSeatBooking = () => {
     const [selectedSeats, setSelectedSeats] = useState([]); // Array for multiple selection
     const [bookedSeats, setBookedSeats] = useState([]);
     const ManagerAccess = localStorage.getItem("managerAccess") === "true";
+    const teamName1 = localStorage.getItem('teamName')
+    const EmployeeName = localStorage.getItem('EmployeeName')
     const [formData, setFormData] = useState({ bookingBy: '', email: '', teamName: '', bookingDate: '', startTime: '', releaseTime: '' });
 
-    const [EditformData, setEditFormData] = useState({ seatId: '', newReleaseTime: '',bookingDate: '', startTime: '', email: '' });
+    const [EditformData, setEditFormData] = useState({ seatId: '', newReleaseTime: '',bookingDate: '', startTime: '', email: '',bookingBy: '' });
     const [isEditing, setIsEditing] = useState(false);
     const [nextReleaseTime, setNextReleaseTime] = useState(false);
     const savedEmail = localStorage.getItem('userEmail');
+    const address = localStorage.getItem('address')
     const [activeSeatQueueId, setActiveSeatQueueId] = useState(null);
     const [BookingHistoryData,setBookingHistoryData]=useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +34,7 @@ const ManagerLevelSeatBooking = () => {
     };
     useEffect(() => {
         fetchSeatStatus();
+        setFormData({...formData,teamName: teamName1, email: savedEmail});
       }, []);
 
     const getHistoryChennaiRoom = ()=>{
@@ -110,8 +114,8 @@ const handleBooking = (isQueue = false, specificSeatId = null) => {
 
     // 3. Form Data Selection
     // Fresh bookings use formData; Queues use EditformData
-    // const bookingName = formData.bookingBy || "Employee"; 
-    const bookingName = formData.bookedBy || "Employee"; 
+    const bookingName = formData.bookingBy || "Employee"; 
+    // const bookingName = formData.bookedBy || "Employee"; 
     
     const bookingEmail = formData.email || savedEmail;
     
@@ -119,6 +123,7 @@ const handleBooking = (isQueue = false, specificSeatId = null) => {
     const sTime = isQueue ? EditformData.startTime : formData.startTime;
     // Note: use newReleaseTime for queue, releaseTime for fresh
     const rTime = isQueue ? EditformData.newReleaseTime : formData.releaseTime;
+    const rBookedby = isQueue ? EditformData.bookingBy : formData.bookingBy
 
     if (!bDate || !sTime || !rTime) {
         alert("Please fill in the Date, Start Time, and End Time.");
@@ -128,7 +133,7 @@ const handleBooking = (isQueue = false, specificSeatId = null) => {
     // 4. Payload Construction
     const payload = {
         seat_ids: targetSeats,
-        booked_by_name: bookingName,
+        booked_by_name: EmployeeName,
         booked_by_email: bookingEmail,
         team_name: formData.teamName || "General",
         booking_date: bDate,
@@ -185,18 +190,55 @@ console.log(savedEmail)
 //         );
 //     });
 // };
+// Inside your ManagerLevelSeatBooking component:
+
+// 1. Helper function to check availability for a specific time window
+const isSeatOccupiedAtTime = (seat, selDate, selStart, selEnd) => {
+    if (!selDate || !selStart || !selEnd) return false;
+
+    // Check current active booking
+    if (!seat.is_available) {
+        if (seat.booking_date === selDate) {
+            // Overlap check: selStart < existingEnd && selEnd > existingStart
+            if (selStart < seat.release_time ) return true;
+        }
+    }
+
+    // Check all future queue bookings
+    if (seat.FutureBookings && seat.FutureBookings.length > 0) {
+        const conflict = seat.FutureBookings.some(b => {
+            if (b.booking_date === selDate) {
+                return (selStart < b.release_time && selEnd > b.start_time);
+            }
+            return false;
+        });
+        if (conflict) return true;
+    }
+
+    return false;
+};
+
+// 2. Updated renderBlock logic to use the check
 const renderBlock = (blockId, count, startX, startY, cols) => {
     return [...Array(count)].map((_, i) => {
         const seatNumber = i + 1;
         const seatId = `${blockId}-S${seatNumber}`;
-        const seatLabel = `S${seatNumber}`; // Individual seat name
+        const seatLabel = `S${seatNumber}`; // The label you want to see
         
         const seatData = bookedSeats.find(s => s.seat_id === seatId);
-        const isOccupied = seatData ? seatData.is_available === false : false;
+        
+        // Use our dynamic occupancy check based on selected date/time
+        const isBusy = seatData ? isSeatOccupiedAtTime(
+            seatData, 
+            formData.bookingDate, 
+            formData.startTime, 
+            formData.releaseTime
+        ) : false;
+
         const isSelected = selectedSeats.includes(seatId);
         
         let seatClass = "seat ";
-        if (isOccupied) {
+        if (isBusy) {
             seatClass += "seat-booked"; 
         } else if (isSelected) {
             seatClass += "seat-selected"; 
@@ -204,34 +246,91 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
             seatClass += "seat-available"; 
         }
 
-        const posX = startX + (i % cols) * 35; // Increased spacing to fit text
-        const posY = startY + Math.floor(i / cols) * 35;
+        // Calculate positions
+        const posX = startX + (i % cols) * 40; // Increased spacing for better readability
+        const posY = startY + Math.floor(i / cols) * 40;
 
         return (
-            <g key={seatId}>
+            <g key={seatId} style={{ cursor: isBusy ? 'not-allowed' : 'pointer' }}>
                 {/* Seat Rectangle */}
                 <rect 
                     x={posX} 
                     y={posY}
-                    width="24" 
-                    height="20" 
+                    width="30" 
+                    height="25" 
+                    rx="4" // Rounded corners for a modern look
                     className={seatClass} 
-                    onClick={() => !isOccupied && handleSeatClick(seatId)} 
-                    style={{ cursor: isOccupied ? 'not-allowed' : 'pointer' }}
+                    onClick={() => !isBusy && handleSeatClick(seatId)} 
                 />
-                {/* Seat Name Label (e.g., S1, S2) */}
+                
+                {/* Seat Label Text */}
+                {/* Placing this AFTER the rect ensures it is on top */}
                 <text 
-                    x={posX + 12.5} 
-                    y={posY + 13} 
+                    x={posX + 15} // Center of the 30 width
+                    y={posY + 16} // Middle of the 25 height
                     textAnchor="middle" 
-                    style={{ fontSize: '8px', fill: isOccupied ? 'white' : 'black', pointerEvents: 'none' }}
+                    style={{ 
+                        fontSize: '10px', 
+                        fontWeight: 'bold',
+                        fill: isBusy || isSelected ? 'white' : '#333', // Contrast color
+                        pointerEvents: 'none', // Critical: clicks pass through to the rect
+                        fontFamily: 'Arial, sans-serif'
+                    }}
                 >
                     {seatLabel}
                 </text>
             </g>
         );
     });
-};    
+};
+
+// const renderBlock = (blockId, count, startX, startY, cols) => {
+//     return [...Array(count)].map((_, i) => {
+//         const seatNumber = i + 1;
+//         const seatId = `${blockId}-S${seatNumber}`;
+//         const seatLabel = `S${seatNumber}`; // Individual seat name
+        
+//         const seatData = bookedSeats.find(s => s.seat_id === seatId);
+//         const isOccupied = seatData ? seatData.is_available === false : false;
+//         const isSelected = selectedSeats.includes(seatId);
+        
+//         let seatClass = "seat ";
+//         if (isOccupied) {
+//             seatClass += "seat-booked"; 
+//         } else if (isSelected) {
+//             seatClass += "seat-selected"; 
+//         } else {
+//             seatClass += "seat-available"; 
+//         }
+
+//         const posX = startX + (i % cols) * 35; // Increased spacing to fit text
+//         const posY = startY + Math.floor(i / cols) * 35;
+
+//         return (
+//             <g key={seatId}>
+//                 {/* Seat Rectangle */}
+//                 <rect 
+//                     x={posX} 
+//                     y={posY}
+//                     width="24" 
+//                     height="20" 
+//                     className={seatClass} 
+//                     onClick={() => !isOccupied && handleSeatClick(seatId)} 
+//                     style={{ cursor: isOccupied ? 'not-allowed' : 'pointer' }}
+//                 />
+//                 {/* Seat Name Label (e.g., S1, S2) */}
+//                 <text 
+//                     x={posX + 12.5} 
+//                     y={posY + 13} 
+//                     textAnchor="middle" 
+//                     style={{ fontSize: '8px', fill: isOccupied ? 'white' : 'black', pointerEvents: 'none' }}
+//                 >
+//                     {seatLabel}
+//                 </text>
+//             </g>
+//         );
+//     });
+// };    
 return (
         <div className="seat-booking-container" >
 
@@ -247,12 +346,15 @@ return (
                 <div className="content-wrapper">
                     <div className="booking-form">
                         <input type="text" placeholder="Booking By *" onChange={e => setFormData({...formData, bookingBy: e.target.value})} />
-                        <input type="text" placeholder='Enter Email *'  onChange={e => setFormData({...formData, email: e.target.value})} />
+                        <input type="text" placeholder={savedEmail}  disabled />
                         {/* <input type = "text" placeholder='Team_Name *' onChange={e => setFormData({...formData, teamName: e.target.value})} /> */}
-                        <select onChange={e => setFormData({...formData, teamName: e.target.value})}>
+                        {/* <select onChange={e => setFormData({...formData, teamName: e.target.value})}>
                             <option>Choose Team</option>
                             <option>Imigrate</option>
                             <option>ServiceNow</option>
+                        </select> */}
+                        <select value={teamName1} disabled>
+                            <option value={teamName1}>{teamName1}</option>
                         </select>
                         <input type = "text" placeholder="bookingDate *" onFocus={(e) => (e.target.type = "date")} onChange={e => setFormData({...formData, bookingDate: e.target.value})} />
                         <input type = "text" placeholder='startTime *' onFocus={(e) => (e.target.type = "time")} onChange={e=> setFormData({...formData, startTime: e.target.value})} />
@@ -432,7 +534,7 @@ return (
                                         <div className="mini-queue-list">
                                             {seat.FutureBookings.map((queueItem, index) => (
                                                 <div key={index} className="queue-item-detail">
-                                                    <strong>{index + 1}. {queueItem.booked_by_name}</strong>
+                                                    <strong>{index + 1}. {queueItem.booked_by_name},{queueItem.booked_by_email}</strong>
                                                     <span>({queueItem.start_time} - {queueItem.release_time})</span>
                                                 </div>
                                             ))}

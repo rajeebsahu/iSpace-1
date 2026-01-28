@@ -258,36 +258,77 @@ class SeatViewSet(viewsets.ModelViewSet):
             seat.check_and_release()
         return super().list(request, *args, **kwargs)
 
+    # @action(detail=False, methods=['post'])
+    # def book_multiple_seats(self, request):
+    #     seat_ids = request.data.get('seat_ids', [])
+    #     new_booking = {
+    #         'booked_by_name': request.data.get('booked_by_name'),
+    #         'booked_by_email': request.data.get('booked_by_email'),
+    #         'team_name': request.data.get('team_name'),
+    #         'booking_date': request.data.get('booking_date'),
+    #         'start_time': request.data.get('start_time'),
+    #         'release_time': request.data.get('release_time')
+    #     }
+
+    #     for s_id in seat_ids:
+    #         seat = OfficeSeat.objects.get(seat_id=s_id)
+    #         if not seat.is_available:
+    #             # Add to Queue
+    #             if not isinstance(seat.FutureBookings, list):
+    #                 seat.FutureBookings = []
+    #             seat.FutureBookings.append(new_booking)
+    #             seat.save()
+    #         else:
+    #             # Book immediately
+    #             OfficeSeat.objects.filter(seat_id=s_id).update(
+    #                 is_available=False,
+    #                 **new_booking
+    #             )
+        
+    #     return Response({'message': 'Bookings processed (some may be queued).'}, status=200)
+
+    #     # POST: Cancel specific seat
     @action(detail=False, methods=['post'])
     def book_multiple_seats(self, request):
         seat_ids = request.data.get('seat_ids', [])
-        new_booking = {
-            'booked_by_name': request.data.get('booked_by_name'),
-            'booked_by_email': request.data.get('booked_by_email'),
-            'team_name': request.data.get('team_name'),
-            'booking_date': request.data.get('booking_date'),
-            'start_time': request.data.get('start_time'),
-            'release_time': request.data.get('release_time')
-        }
+        b_date = request.data.get('booking_date')
+        b_start = request.data.get('start_time')
+        
+        now_local = timezone.localtime(timezone.now())
+        today_str = now_local.strftime("%Y-%m-%d")
 
         for s_id in seat_ids:
-            seat = OfficeSeat.objects.get(seat_id=s_id)
-            if not seat.is_available:
-                # Add to Queue
-                if not isinstance(seat.FutureBookings, list):
-                    seat.FutureBookings = []
-                seat.FutureBookings.append(new_booking)
-                seat.save()
-            else:
-                # Book immediately
-                OfficeSeat.objects.filter(seat_id=s_id).update(
-                    is_available=False,
-                    **new_booking
-                )
-        
-        return Response({'message': 'Bookings processed (some may be queued).'}, status=200)
-
-        # POST: Cancel specific seat
+            try:
+                seat = OfficeSeat.objects.get(seat_id=s_id)
+                
+                # 1. OCCUPANCY CHECK: If red on map, add to queue
+                if not seat.is_available:
+                    if not isinstance(seat.FutureBookings, list):
+                        seat.FutureBookings = []
+                    seat.FutureBookings.append(request.data)
+                    seat.save()
+                
+                # 2. DATE CHECK: If green but for tomorrow, add to queue
+                elif b_date > today_str:
+                    if not isinstance(seat.FutureBookings, list):
+                        seat.FutureBookings = []
+                    seat.FutureBookings.append(request.data)
+                    seat.save()
+                
+                # 3. IMMEDIATE BOOKING: Green and for today
+                else:
+                    seat.is_available = False
+                    seat.booked_by_name = request.data.get('booked_by_name')
+                    seat.booked_by_email = request.data.get('booked_by_email')
+                    seat.team_name = request.data.get('team_name')
+                    seat.booking_date = b_date
+                    seat.start_time = b_start
+                    seat.release_time = request.data.get('release_time')
+                    seat.save()
+            except OfficeSeat.DoesNotExist:
+                continue
+                
+        return Response({'message': 'Bookings processed.'}, status=200)
     @action(detail=False, methods=['post'])
     def cancel_booking(self, request):
         seat_id = request.data.get('seat_id')

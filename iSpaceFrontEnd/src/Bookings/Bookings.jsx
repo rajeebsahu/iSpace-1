@@ -26,6 +26,7 @@ const Booking = () => {
   const [location,setLocation]=useState("")
   const [occupied_by,setOccupied_by]=useState("")
   const [Bookedby,setBookedby]=useState(localStorage.getItem('userEmail'))
+  console.log(location)
 
   //Edited data
   const [editingId, setEditingId] = useState(null);
@@ -43,6 +44,8 @@ const Booking = () => {
 
 
   const savedEmail = localStorage.getItem('userEmail');
+  const address = localStorage.getItem('address')
+  const teamName = localStorage.getItem('teamName')
   const ManagerAccess = localStorage.getItem("managerAccess") === "true";
   // Add this line with your other state declarations
   const [activeBookingId, setActiveBookingId] = useState(null);
@@ -57,6 +60,8 @@ const Booking = () => {
   }
   useEffect(() => {
     getChennaiRoom();
+    setLocation(address)
+    setOccupied_by(teamName)
   }, []);
 
 
@@ -170,6 +175,8 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
     return true;
 };
 
+console.log("this is",address)
+
 
   return (
     <div className="booking-page">
@@ -241,7 +248,7 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
                   <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" onChange={(e)=>{setReleaseTime(e.target.value); setFromTime(e.target.value)}} />
                 </div>
                 <div className="input-group">
-                  <label>Select Room Type <span className='textred'>*</span></label>
+                  <label>Available Training Room Type <span className='textred'>*</span></label>
                   {/* <select onChange={(e) => setAvailableRoom(e.target.value)}>
     <option value="">Select Room</option>
     {ChennaiRoomData.map((data) => {
@@ -271,19 +278,27 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
                 </div>
                 <div className="input-group">
                   <label>Location <span className='textred'>*</span></label>
-                  <select onChange={(e)=>{setLocation(e.target.value)}}>
+                  {/* <select onChange={(e)=>{setLocation(e.target.value)}}>
                     <option>Choose Branch</option>
                     <option>iSpace - Bangalore</option>
                     <option>iSpace - Chennai</option>
+                  </select> */}
+           
+                  <select value={address} disabled>
+                    <option value={address}>{address}</option>
                   </select>
                 </div>
                 <div className="input-group">
                   <label>Team Name <span className='textred'>*</span></label>
-                  <select onChange={(e)=>{setOccupied_by(e.target.value)}}>
+                  {/* <select onChange={(e)=>{setOccupied_by(e.target.value)}}>
                     <option>Choose Team</option>
                     <option>Imigrate</option>
                     <option>ServiceNow</option>
+                  </select> */}
+                  <select value={teamName} disabled>
+                    <option value={teamName}>{teamName}</option>
                   </select>
+                  
                 </div>
                 <div className="input-group">
                   <label>Employee Name <span className='textred'>*</span></label>
@@ -294,11 +309,21 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
 
                 {roomType==="Conference Room" && ( 
                   <><div className="input-group">
-                  <label>Date</label>
-                  <input type="date" placeholder="January 5th, 2026" onChange={(e)=>{setDate(e.target.value)}} />
+                  <label>Date <span className='textred'>*</span></label>
+                  <input type="text" onFocus={(e) => (e.target.type = "date")}   placeholder="Enter Date" onChange={(e)=>{setDate(e.target.value)}} />
+                </div>
+                
+
+                <div className="input-group">
+                  <label>From <span className='textred'>*</span></label>
+                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter Start Time" onChange={(e)=>{setBookingTime(e.target.value)}} />
                 </div>
                 <div className="input-group">
-                  <label>Available Conference Type</label>
+                  <label>To <span className='textred'>*</span></label>
+                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" onChange={(e)=>{setReleaseTime(e.target.value)}} />
+                </div>
+                <div className="input-group">
+                  <label>Available Conference Type <span className='textred'>*</span></label>
                   {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
                     <option>Select Room</option>
                     {
@@ -321,42 +346,48 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
     ))}
 </select>
                 </div>
-
                 <div className="input-group">
-                  <label>From</label>
-                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setBookingTime(e.target.value)}} />
-                </div>
-                <div className="input-group">
-                  <label>To</label>
-                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setReleaseTime(e.target.value)}} />
-                </div>
-                <div className="input-group">
-                  <label>Location</label>
-                  <select onChange={(e)=>{setLocation(e.target.value)}}>
+                  <label>Location <span className='textred'>*</span></label>
+                  {/* <select onChange={(e)=>{setLocation(e.target.value)}}>
                     <option>iSpace - Bangalore</option>
                     <option>iSpace - Chennai</option>
+                  </select> */}
+                  <select value={address} disabled>
+                    <option value={address}>{address}</option>
                   </select>
                 </div>
                 <div className="input-group">
-                  <label>Team Name</label>
-                  <select onChange={(e)=>{setOccupied_by(e.target.value)}}>
+                  <label>Team Name <span className='textred'>*</span></label>
+                  {/* <select onChange={(e)=>{setOccupied_by(e.target.value)}}>
                     <option>Imigrate</option>
                     <option>ServiceNow</option>
+                  </select> */}
+                  <select value={teamName} disabled>
+                    <option value={teamName}>{teamName}</option>
                   </select>
                 </div>
                 <div className="input-group">
-                  <label>Employee Name</label>
+                  <label>Employee Name <span className='textred'>*</span></label>
                   <input type="text" placeholder="Employee Name" value={savedEmail} disabled onChange={(e)=>{setBookedby(e.target.value)}} />
                 </div></>
                 )}
 
                 {roomType==="Training Room" && ( 
                   <><div className="input-group">
-                  <label>Date</label>
-                  <input type="date" placeholder="January 5th, 2026" onChange={(e)=>{setDate(e.target.value)}} />
+                  <label>Date <span className='textred'>*</span></label>
+                  <input type="text" onFocus={(e) => (e.target.type = "date")}  placeholder="Enter Date" onChange={(e)=>{setDate(e.target.value)}} />
+                </div>
+                
+                <div className="input-group">
+                  <label>From <span className='textred'>*</span></label>
+                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter Start Time" onChange={(e)=>{setBookingTime(e.target.value)}} />
                 </div>
                 <div className="input-group">
-                  <label>Available Training Room Type</label>
+                  <label>To <span className='textred'>*</span></label>
+                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" onChange={(e)=>{setReleaseTime(e.target.value)}} />
+                </div>
+                <div className="input-group">
+                  <label>Available Training Room Type <span className='textred'>*</span></label>
                   {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
                     <option>Select Room</option>
                     {
@@ -381,29 +412,27 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
                 </div>
 
                 <div className="input-group">
-                  <label>From</label>
-                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setBookingTime(e.target.value)}} />
-                </div>
-                <div className="input-group">
-                  <label>To</label>
-                  <input type="time" placeholder="11:00 AM" onChange={(e)=>{setReleaseTime(e.target.value)}} />
-                </div>
-                <div className="input-group">
-                  <label>Location</label>
-                  <select onChange={(e)=>{setLocation(e.target.value)}}>
+                  <label>Location <span className='textred'>*</span></label>
+                  {/* <select onChange={(e)=>{setLocation(e.target.value)}}>
                     <option>iSpace - Bangalore</option>
                     <option>iSpace - Chennai</option>
+                  </select> */}
+                  <select value={address} disabled>
+                    <option value={address}>{address}</option>
                   </select>
                 </div>
                 <div className="input-group">
-                  <label>Team Name</label>
-                  <select onChange={(e)=>{setOccupied_by(e.target.value)}}>
+                  <label>Team Name <span className='textred'>*</span></label>
+                  {/* <select onChange={(e)=>{setOccupied_by(e.target.value)}}>
                     <option>Imigrate</option>
                     <option>ServiceNow</option>
+                  </select> */}
+                  <select value={teamName} disabled>
+                    <option value={teamName}>{teamName}</option>
                   </select>
                 </div>
                 <div className="input-group">
-                  <label>Employee Name</label>
+                  <label>Employee Name <span className='textred'>*</span></label>
                   <input type="text" placeholder="Employee Name" value={savedEmail} disabled onChange={(e)=>{setBookedby(e.target.value)}} />
                 </div>
                 </>

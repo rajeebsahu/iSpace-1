@@ -38,11 +38,17 @@ const AdminLogin = () => {
     })
     .then((response) => {
       const managerAccess = response.data.managerAccess
+      const address =  response.data.address
+      const teamName = response.data.teamName
+      const employeeName =  response.data.name
       alert("Employee Login Successful!");
       // 3. CRITICAL: Store the email so ManagerLevelSeatBooking can use it!
       localStorage.setItem('userEmail', email);
       localStorage.setItem('userRole', 'employee');
       localStorage.setItem('managerAccess',managerAccess)
+      localStorage.setItem('address',address)
+      localStorage.setItem('teamName',teamName)
+      localStorage.setItem('EmployeeName',employeeName)
   
       navigate('/'); // Redirect to ManagerLevelSeatBooking.jsx page
     })

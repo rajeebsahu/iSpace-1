@@ -23,6 +23,7 @@ class Employees(models.Model):
     status = models.IntegerField()
     posting_date = models.TimeField()
     managerAccess = models.BooleanField(default=False)
+    teamName = models.CharField(max_length = 255,default="Employee")
     
 
 from django.db import models
@@ -377,15 +378,16 @@ class OfficeSeat(models.Model):
     start_time = models.TimeField(null=True, blank=True)
     release_time = models.TimeField(null=True, blank=True)
     FutureBookings = models.JSONField(default=list, null=True, blank=True)
-    def next_booking_to_time(self,time_str):
-        """Helper to convert 'HH:MM' string to a python time object"""
-        if not time_str or time_str == "N/A":
-            return None
-        try:
-            # Converts "14:30" string to a datetime object, then extracts the time
-            return datetime.datetime.strptime(time_str, "%H:%M").time()
-        except ValueError:
-            return None
+    
+    # def next_booking_to_time(self,time_str):
+    #     """Helper to convert 'HH:MM' string to a python time object"""
+    #     if not time_str or time_str == "N/A":
+    #         return None
+    #     try:
+    #         # Converts "14:30" string to a datetime object, then extracts the time
+    #         return datetime.datetime.strptime(time_str, "%H:%M").time()
+    #     except ValueError:
+    #         return None
     def next_booking_to_date(self,date_str):
         """Helper to convert 'YYYY-MM-DD' string to a python date object"""
         if not date_str or date_str in ["", "N/A"]:
@@ -487,7 +489,8 @@ class OfficeSeat(models.Model):
                     self.booking_date = self.next_booking_to_date(next_b.get('booking_date'))
                     self.start_time = self.next_booking_to_time(next_b.get('start_time'))
                     self.release_time = self.next_booking_to_time(next_b.get('release_time'))
-                    
+                    print("this is",self.next_booking_to_time(next_b.get('start_time')))
+                    print(f"DEBUG: Selected next_b data: {next_b}")
                     self.is_available = False
                 else:
                     # No one waiting, reset seat
@@ -503,6 +506,24 @@ class OfficeSeat(models.Model):
     
     def __str__(self):
         return f"{self.seat_id} - {'Available' if self.is_available else 'Occupied'}"
+    def next_booking_to_time(self, time_str):
+        if not time_str or time_str in ["N/A", "", None]:
+            return None
+    
+        # Ensure it's a string and remove any trailing/leading spaces
+        time_str = str(time_str).strip()
+    
+        try:
+            # 1. Try parsing with seconds (HH:MM:SS)
+            return datetime.datetime.strptime(time_str, "%H:%M:%S").time()
+        except ValueError:
+            try:
+            # 2. Fallback: Try parsing without seconds (HH:MM)
+                return datetime.datetime.strptime(time_str, "%H:%M").time()
+            except ValueError:
+                # 3. If both fail, log the error and return None
+                print(f"ERROR: Could not parse time string '{time_str}'")
+                return None
 
 
 
