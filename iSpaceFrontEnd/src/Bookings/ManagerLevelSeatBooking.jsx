@@ -110,7 +110,9 @@ const handleBooking = (isQueue = false, specificSeatId = null) => {
 
     // 3. Form Data Selection
     // Fresh bookings use formData; Queues use EditformData
-    const bookingName = formData.bookingBy || "Employee"; 
+    // const bookingName = formData.bookingBy || "Employee"; 
+    const bookingName = formData.bookedBy || "Employee"; 
+    
     const bookingEmail = formData.email || savedEmail;
     
     const bDate = isQueue ? EditformData.bookingDate : formData.bookingDate;
@@ -318,6 +320,7 @@ return (
                 <li key={seat.seat_id} className="booking-list-item">
                     <h5>SeatId : {seat.seat_id}</h5>
                     <h5>BookedBy : {seat.booked_by_name}</h5>
+                    <h5>Date: {seat.booking_date}</h5>
                     <h5>ReleaseTime : {seat.release_time}</h5>
                     <h5>Team Name: {seat.team_name}</h5>
                     <button onClick={() => { 
@@ -402,6 +405,7 @@ return (
                     <th>Seat ID</th>
                     <th>Current Occupant</th>
                     <th>Team</th>
+                    <th>Date</th>
                     <th>Release Time</th>
                     <th>Waiting List Details</th>
                     <th>Actions</th>
@@ -421,6 +425,7 @@ return (
                                     </div>
                                 </td>
                                 <td>{seat.team_name || 'General'}</td>
+                                <td>{seat.booking_date}</td>
                                 <td><span className="time-highlight">{seat.release_time}</span></td>
                                 <td>
                                     {seat.FutureBookings && seat.FutureBookings.length > 0 ? (

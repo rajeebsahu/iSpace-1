@@ -91,63 +91,189 @@ class ChennaiRooms(models.Model):
     #         except ValueError as e:
     #             # Handle cases where ReleaseTiming format is wrong
     #             print(f"Time format error: {e}")
-    def check_and_reset(self):
-        # We only check rooms that are currently marked as occupied
-        if self.availability_status and self.ReleaseTiming and self.ReleaseTiming not in ["N/A", ""]:
-            try:
-                from django.utils import timezone
-                import datetime
+    # def check_and_reset(self):
+    #     # We only check rooms that are currently marked as occupied
+    #     if self.availability_status and self.ReleaseTiming and self.ReleaseTiming not in ["N/A", ""]:
+    #         try:
+    #             from django.utils import timezone
+    #             import datetime
 
-                # 1. Get current local time
-                now_local = timezone.localtime(timezone.now())
-                current_time = now_local.time()
+    #             # 1. Get current local time
+    #             now_local = timezone.localtime(timezone.now())
+    #             current_time = now_local.time()
 
-                # 2. Convert ReleaseTiming string "HH:MM" to a time object
-                release_time_obj = datetime.datetime.strptime(self.ReleaseTiming, "%H:%M").time()
-                print("ganesh1")
+    #             # 2. Convert ReleaseTiming string "HH:MM" to a time object
+    #             release_time_obj = datetime.datetime.strptime(self.ReleaseTiming, "%H:%M").time()
+    #             print("ganesh1")
 
-                # 3. Check if the booking has expired
-                if current_time >= release_time_obj:
-                    print("ganesh")
-                    # A. LOG TO HISTORY: Save the booking that just finished
-                    BookingHistory.objects.create(
-                        BookingType =  "RoomBooking",
-                        room_name=self.room_name,
-                        main_room_name=self.MainRoomName,
-                        booked_by=self.BookedBy,
-                        occupied_by=self.Occupied_by,
-                        start_time=self.OccuipedTiming,
-                        end_time=self.ReleaseTiming,
-                        location= self.location
+    #             # 3. Check if the booking has expired
+    #             if current_time >= release_time_obj:
+    #                 print("ganesh")
+    #                 # A. LOG TO HISTORY: Save the booking that just finished
+    #                 BookingHistory.objects.create(
+    #                     BookingType =  "RoomBooking",
+    #                     room_name=self.room_name,
+    #                     main_room_name=self.MainRoomName,
+    #                     booked_by=self.BookedBy,
+    #                     occupied_by=self.Occupied_by,
+    #                     start_time=self.OccuipedTiming,
+    #                     end_time=self.ReleaseTiming,
+    #                     location= self.location
                         
-                    )
+    #                 )
 
-                    # B. QUEUE LOGIC: Check if someone is waiting in the FutureBookings list
-                    if self.FutureBookings and len(self.FutureBookings) > 0:
-                        # Pop the first person from the list
-                        next_booking = self.FutureBookings.pop(0)
+    #                 # B. QUEUE LOGIC: Check if someone is waiting in the FutureBookings list
+    #                 if self.FutureBookings and len(self.FutureBookings) > 0:
+    #                     # Pop the first person from the list
+    #                     next_booking = self.FutureBookings.pop(0)
 
-                        # Promote them to current occupant
-                        self.Occupied_by = next_booking.get('occupied_by')
-                        self.OccuipedTiming = next_booking.get('BookingTime')
-                        self.ReleaseTiming = next_booking.get('ReleaseTime')
-                        self.BookedBy = next_booking.get('Bookedby')
-                        self.availability_status = True # Stay occupied for the next person
-                    else:
-                        # No one is waiting, reset fields to empty
-                        self.availability_status = False
-                        self.Occupied_by = "N/A"
-                        self.OccuipedTiming = "N/A"
-                        self.ReleaseTiming = "N/A"
-                        self.BookedBy = "N/A"
+    #                     # Promote them to current occupant
+    #                     self.Occupied_by = next_booking.get('occupied_by')
+    #                     self.OccuipedTiming = next_booking.get('BookingTime')
+    #                     self.ReleaseTiming = next_booking.get('ReleaseTime')
+    #                     self.BookedBy = next_booking.get('Bookedby')
+    #                     self.availability_status = True # Stay occupied for the next person
+    #                 else:
+    #                     # No one is waiting, reset fields to empty
+    #                     self.availability_status = False
+    #                     self.Occupied_by = "N/A"
+    #                     self.OccuipedTiming = "N/A"
+    #                     self.ReleaseTiming = "N/A"
+    #                     self.BookedBy = "N/A"
 
-                    # 4. Save the changes to the database
-                    self.save()
-                    print(f"DEBUG: {self.room_name} processed. Queue size now: {len(self.FutureBookings) if self.FutureBookings else 0}")
+    #                 # 4. Save the changes to the database
+    #                 self.save()
+    #                 print(f"DEBUG: {self.room_name} processed. Queue size now: {len(self.FutureBookings) if self.FutureBookings else 0}")
+                    
 
-            except Exception as e:
-                print(f"Error in check_and_reset for {self.room_name}: {e}")
+    #         except Exception as e:
+    #             print(f"Error in check_and_reset for {self.room_name}: {e}")
+    # def check_and_reset(self):
+    #     if self.availability_status and self.ReleaseTiming and self.ReleaseTiming not in ["N/A", ""]:
+    #         try:
+    #             from django.utils import timezone
+    #             import datetime
 
+    #             now_local = timezone.localtime(timezone.now())
+    #             current_time = now_local.time()
+    #             current_date_str = now_local.strftime("%Y-%m-%d")
+
+    #             release_time_obj = datetime.datetime.strptime(self.ReleaseTiming, "%H:%M").time()
+
+    #             if current_time >= release_time_obj:
+    #                 # A. LOG TO HISTORY
+    #                 BookingHistory.objects.create(
+    #                     BookingType="RoomBooking",
+    #                     room_name=self.room_name,
+    #                     main_room_name=self.MainRoomName,
+    #                     booked_by=self.BookedBy,
+    #                     occupied_by=self.Occupied_by,
+    #                     start_time=self.OccuipedTiming,
+    #                     end_time=self.ReleaseTiming,
+    #                     location=self.location
+    #                 )
+
+    #                 # B. CHRONOLOGICAL QUEUE LOGIC
+    #                 if self.FutureBookings and len(self.FutureBookings) > 0:
+    #                     # Find the booking with the earliest Date and Time instead of just popping index 0
+    #                     next_booking = min(
+    #                         self.FutureBookings,
+    #                         key=lambda x: (
+    #                             x.get('BookingDate', current_date_str), 
+    #                             x.get('BookingTime', '23:59')
+    #                         )
+    #                     )
+    #                     # Remove the specific selected booking from the list
+    #                     self.FutureBookings.remove(next_booking)
+
+    #                     self.Occupied_by = next_booking.get('occupied_by')
+    #                     self.OccuipedTiming = next_booking.get('BookingTime')
+    #                     self.ReleaseTiming = next_booking.get('ReleaseTime')
+    #                     self.BookedBy = next_booking.get('Bookedby')
+    #                     self.availability_status = True 
+    #                 else:
+    #                     self.availability_status = False
+    #                     self.Occupied_by = "N/A"
+    #                     self.OccuipedTiming = "N/A"
+    #                     self.ReleaseTiming = "N/A"
+    #                     self.BookedBy = "N/A"
+
+    #                 self.save()
+    #         except Exception as e:
+    #             print(f"Error in check_and_reset for {self.room_name}: {e}")
+    def check_and_reset(self):
+        """
+        Logic:
+        1. If room is occupied, check if it's time to release it.
+        2. If room is free, check if there is a booking in the queue that should start NOW.
+        """
+        try:
+            now_local = timezone.localtime(timezone.now())
+            current_time = now_local.time()
+            current_date_str = now_local.strftime("%Y-%m-%d")
+
+            # CASE A: Room is currently occupied - Check for expiry
+            if self.availability_status and self.ReleaseTiming not in ["N/A", ""]:
+                release_time_obj = datetime.datetime.strptime(self.ReleaseTiming, "%H:%M").time()
+                
+                if current_time >= release_time_obj:
+                    # Log finished booking to history
+                    self.log_to_history()
+                    # Check if the NEXT person in queue needs the room IMMEDIATELY
+                    self.process_queue(current_time, current_date_str)
+            
+            # CASE B: Room is currently available - Check if a future booking starts NOW
+            elif not self.availability_status and self.FutureBookings:
+                self.process_queue(current_time, current_date_str)
+
+        except Exception as e:
+            print(f"Error in reset logic: {e}")
+
+    def process_queue(self, current_time, current_date_str):
+        """Promotes a booking only if its start time has arrived for the current date."""
+        if not self.FutureBookings:
+            self.reset_room()
+            return
+
+        # Find the earliest booking
+        next_b = min(self.FutureBookings, key=lambda x: (x.get('date'), x.get('BookingTime')))
+        
+        b_date = next_b.get('date')
+        b_start = datetime.datetime.strptime(next_b.get('BookingTime'), "%H:%M").time()
+
+        # ONLY promote to active if Date is Today and Start Time has arrived
+        if b_date == current_date_str and current_time >= b_start:
+            self.FutureBookings.remove(next_b)
+            self.Occupied_by = next_b.get('occupied_by')
+            self.OccuipedTiming = next_b.get('BookingTime')
+            self.ReleaseTiming = next_b.get('ReleaseTime')
+            self.BookedBy = next_b.get('Bookedby')
+            self.availability_status = True
+            self.save()
+        else:
+            # It's a future booking for later; keep room status as available
+            self.reset_room()
+
+    def reset_room(self):
+        self.availability_status = False
+        self.Occupied_by = "N/A"
+        self.OccuipedTiming = "N/A"
+        self.ReleaseTiming = "N/A"
+        self.BookedBy = "N/A"
+        self.save()
+
+    def log_to_history(self):
+        BookingHistory.objects.create(
+            BookingType="RoomBooking",
+            room_name=self.room_name,
+            main_room_name=self.MainRoomName,
+            booked_by=self.BookedBy,
+            occupied_by=self.Occupied_by,
+            start_time=self.OccuipedTiming,
+            end_time=self.ReleaseTiming,
+            location=self.location
+        )
+        
 class BookingHistory(models.Model):
     BookingType = models.CharField(max_length=255,default="None")
     room_name = models.CharField(max_length=255)
@@ -269,36 +395,95 @@ class OfficeSeat(models.Model):
             return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return None
+    # def check_and_release(self):
+    #     """Automatically releases the seat or promotes the next person in queue."""
+    #     if not self.is_available and self.release_time:
+    #         now = timezone.localtime(timezone.now()).time()
+    #         now_local = timezone.localtime(timezone.now())
+    #         current_time = now_local.time()
+
+    #         # release_time_obj = datetime.datetime.strptime(self.release_time, "%H:%M").time()
+    #         if current_time >= self.release_time:
+    #                 # A. LOG TO HISTORY: Save the booking that just finished
+    #                 BookingHistory.objects.create(
+    #                     BookingType =  "SeatBooking",
+    #                     room_name=self.block,
+    #                     main_room_name=self.seat_id,
+    #                     booked_by=self.booked_by_name,
+    #                     occupied_by=self.booked_by_email,
+    #                     start_time=self.start_time or "N/A",
+    #                     end_time=self.release_time,
+    #                 )
+
+    #         if now >= self.release_time:
+    #             # QUEUE LOGIC
+    #             if self.FutureBookings and len(self.FutureBookings) > 0:
+    #                 next_b = self.FutureBookings.pop(0)
+    #                 self.booked_by_name = next_b.get('booked_by_name')
+    #                 self.booked_by_email = next_b.get('booked_by_email')
+    #                 self.team_name = next_b.get('team_name')
+    #                 # self.booking_date = next_b.get('booking_date')
+                    
+    #                 # Use the helper function here
+    #                 self.booking_date = self.next_booking_to_date(next_b.get('booking_date'))
+    #                 self.start_time = self.next_booking_to_time(next_b.get('start_time'))
+    #                 self.release_time = self.next_booking_to_time(next_b.get('release_time'))
+                    
+    #                 self.is_available = False
+    #             else:
+    #                 # No one waiting, reset seat
+    #                 self.is_available = True
+    #                 self.booked_by_name = None
+    #                 self.booked_by_email = None
+    #                 self.team_name = None
+    #                 self.release_time = None
+    #                 self.start_time = None
+    #                 self.booking_date = None
+                
+    #             self.save()
     def check_and_release(self):
-        """Automatically releases the seat or promotes the next person in queue."""
+        """Automatically releases the seat or promotes the earliest chronological person in queue."""
         if not self.is_available and self.release_time:
-            now = timezone.localtime(timezone.now()).time()
+            from django.utils import timezone
+            import datetime
+            
             now_local = timezone.localtime(timezone.now())
             current_time = now_local.time()
+            current_date_str = now_local.strftime("%Y-%m-%d")
 
-            # release_time_obj = datetime.datetime.strptime(self.release_time, "%H:%M").time()
+            # Check if the current booking has expired
             if current_time >= self.release_time:
-                    # A. LOG TO HISTORY: Save the booking that just finished
-                    BookingHistory.objects.create(
-                        BookingType =  "SeatBooking",
-                        room_name=self.block,
-                        main_room_name=self.seat_id,
-                        booked_by=self.booked_by_name,
-                        occupied_by=self.booked_by_email,
-                        start_time=self.start_time or "N/A",
-                        end_time=self.release_time,
-                    )
+                # A. LOG TO HISTORY
+                BookingHistory.objects.create(
+                    BookingType="SeatBooking",
+                    room_name=self.block,
+                    main_room_name=self.seat_id,
+                    booked_by=self.booked_by_name,
+                    occupied_by=self.booked_by_email,
+                    start_time=self.start_time.strftime("%H:%M") if self.start_time else "N/A",
+                    end_time=self.release_time.strftime("%H:%M"),
+                )
 
-            if now >= self.release_time:
-                # QUEUE LOGIC
+                # B. CHRONOLOGICAL QUEUE LOGIC
                 if self.FutureBookings and len(self.FutureBookings) > 0:
-                    next_b = self.FutureBookings.pop(0)
+                    # Find the booking with the earliest Date and Start Time
+                    next_b = min(
+                        self.FutureBookings,
+                        key=lambda x: (
+                            x.get('booking_date', current_date_str), 
+                            x.get('start_time', '23:59')
+                        )
+                    )
+                    
+                    # Remove the identified earliest booking from the list
+                    self.FutureBookings.remove(next_b)
+
+                    # Promote the earliest person to current occupant
                     self.booked_by_name = next_b.get('booked_by_name')
                     self.booked_by_email = next_b.get('booked_by_email')
                     self.team_name = next_b.get('team_name')
-                    # self.booking_date = next_b.get('booking_date')
                     
-                    # Use the helper function here
+                    # Convert strings to proper date/time objects using existing helpers
                     self.booking_date = self.next_booking_to_date(next_b.get('booking_date'))
                     self.start_time = self.next_booking_to_time(next_b.get('start_time'))
                     self.release_time = self.next_booking_to_time(next_b.get('release_time'))
@@ -315,6 +500,7 @@ class OfficeSeat(models.Model):
                     self.booking_date = None
                 
                 self.save()
+    
     def __str__(self):
         return f"{self.seat_id} - {'Available' if self.is_available else 'Occupied'}"
 

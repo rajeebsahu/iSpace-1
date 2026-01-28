@@ -366,33 +366,63 @@ class BangaloreRoomViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(rooms, many=True)
         return Response(serializer.data)
 
+    # @action(detail=False, methods=['post'])
+    # def bookroom(self, request):
+    #     room_name = request.data.get('room_name')
+    #     print(room_name)
+        
+    #     try:
+    #         # 1. Get the room
+    #         room = BangaloreRooms.objects.get(room_name=room_name)
+            
+    #         # 2. Run reset logic first to see if it just became available
+    #         room.check_and_reset()
+    #         print(room.availability_status)
+    #         if room.availability_status == True:
+    #             return Response({'message': 'Room is already occupied'}, status=400)
+    #         # 3. Update the existing room row with new data
+    #         elif room.availability_status == False:
+    #             room.MainRoomName = request.data.get('MainRoom', 'Training Room')
+    #             room.Occupied_by = request.data.get('occupied_by', 'Guest')
+    #             room.OccuipedTiming = request.data.get('BookingTime')
+    #             room.ReleaseTiming = request.data.get('ReleaseTime')
+    #             room.availability_status = True  # Mark as occupied
+    #             room.BookedBy = request.data.get('Bookedby', 'Employee')
+    #             room.save()
+    #         serializer = BangaloreRoomsSerializers(room)
+    #         return Response(serializer.data, status=200)
+
+    #     except BangaloreRooms.DoesNotExist:
+    #         return Response({'message': 'Room not found'}, status=404)
+    #     except Exception as e:
+    #         return Response({'message': str(e)}, status=400)
     @action(detail=False, methods=['post'])
     def bookroom(self, request):
-        room_name = request.data.get('room_name')
-        print(room_name)
-        
-        try:
-            # 1. Get the room
-            room = BangaloreRooms.objects.get(room_name=room_name)
-            
-            # 2. Run reset logic first to see if it just became available
-            room.check_and_reset()
-            print(room.availability_status)
-            if room.availability_status == True:
-                return Response({'message': 'Room is already occupied'}, status=400)
-            # 3. Update the existing room row with new data
-            elif room.availability_status == False:
-                room.MainRoomName = request.data.get('MainRoom', 'Training Room')
-                room.Occupied_by = request.data.get('occupied_by', 'Guest')
-                room.OccuipedTiming = request.data.get('BookingTime')
-                room.ReleaseTiming = request.data.get('ReleaseTime')
-                room.availability_status = True  # Mark as occupied
-                room.BookedBy = request.data.get('Bookedby', 'Employee')
-                room.save()
-            serializer = BangaloreRoomsSerializers(room)
-            return Response(serializer.data, status=200)
+        room_id = request.data.get('id')
+        b_date = request.data.get('date')
+        b_start = request.data.get('BookingTime')
+    
+        room = ChennaiRooms.objects.get(id=room_id)
+    
+        now_local = timezone.localtime(timezone.now())
+        today = now_local.strftime("%Y-%m-%d")
+        current_time = now_local.strftime("%H:%M")
 
-        except BangaloreRooms.DoesNotExist:
-            return Response({'message': 'Room not found'}, status=404)
-        except Exception as e:
-            return Response({'message': str(e)}, status=400)
+        # If the booking starts in the future (different day or later today)
+        is_future = (b_date > today) or (b_date == today and b_start > current_time)
+
+        if is_future:
+            if not isinstance(room.FutureBookings, list):
+                room.FutureBookings = []
+            room.FutureBookings.append(request.data)
+            room.save()
+            return Response({'message': 'Future booking added to schedule.'}, status=201)
+        else:
+            # Immediate Booking
+            room.availability_status = True
+            room.Occupied_by = request.data.get('occupied_by')
+            room.OccuipedTiming = b_start
+            room.ReleaseTiming = request.data.get('ReleaseTime')
+            room.BookedBy = request.data.get('Bookedby')
+            room.save()
+            return Response({'message': 'Room booked successfully!'}, status=200)

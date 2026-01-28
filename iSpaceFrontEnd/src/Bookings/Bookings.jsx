@@ -102,7 +102,8 @@ const BookingRoom = () => {
         MainRoom: roomType
     })
     .then((res) => {
-        alert("Data added successfully");
+        // alert({roomType} + {AvailableRoom} +  "Booked successfully");
+        alert(`${roomType}${AvailableRoom} Booked successfully`);
         getChennaiRoom();
     })
     .catch((err) => {
@@ -140,6 +141,33 @@ const handleUpdate = (id) => {
         getChennaiRoom();   // Refresh data
     })
     .catch((err) => alert("Update failed"));
+};
+
+const isRoomAvailable = (room, selDate, selStart, selEnd) => {
+    if (!selDate || !selStart || !selEnd) return true;
+
+    // 1. Check current active booking
+    if (room.availability_status) {
+        const activeDate = room.datetime.split('T')[0];
+        if (activeDate === selDate) {
+            // Overlap check: Starts before current ends AND ends after current starts
+            const collision = (selStart < room.ReleaseTiming && selEnd > room.OccuipedTiming);
+            if (collision) return false;
+        }
+    }
+
+    // 2. Check all queued future bookings
+    if (room.FutureBookings && room.FutureBookings.length > 0) {
+        const hasConflict = room.FutureBookings.some(b => {
+            if (b.date === selDate) {
+                return (selStart < b.ReleaseTime && selEnd > b.BookingTime);
+            }
+            return false;
+        });
+        if (hasConflict) return false;
+    }
+
+    return true;
 };
 
 
@@ -214,7 +242,7 @@ const handleUpdate = (id) => {
                 </div>
                 <div className="input-group">
                   <label>Select Room Type <span className='textred'>*</span></label>
-                  <select onChange={(e) => setAvailableRoom(e.target.value)}>
+                  {/* <select onChange={(e) => setAvailableRoom(e.target.value)}>
     <option value="">Select Room</option>
     {ChennaiRoomData.map((data) => {
       console.log(data.availability_status)
@@ -228,6 +256,17 @@ const handleUpdate = (id) => {
         }
         return null;
     })}
+</select> */}
+<select onChange={(e) => setAvailableRoom(e.target.value)}>
+    <option value="">Select Room</option>
+    {ChennaiRoomData.filter(data => 
+        data.MainRoomName === roomType && 
+        isRoomAvailable(data, date, BookingTime, ReleaseTime) // Dynamic Filter
+    ).map((data) => (
+        <option key={data.id} value={data.id}>
+            {data.room_name} (Available)
+        </option>
+    ))}
 </select>
                 </div>
                 <div className="input-group">
@@ -260,7 +299,7 @@ const handleUpdate = (id) => {
                 </div>
                 <div className="input-group">
                   <label>Available Conference Type</label>
-                  <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
+                  {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
                     <option>Select Room</option>
                     {
                       ChennaiRoomData.map((data)=>{
@@ -269,7 +308,18 @@ const handleUpdate = (id) => {
                         }
                       })
                     }
-                  </select>
+                  </select> */}
+                  <select onChange={(e) => setAvailableRoom(e.target.value)}>
+    <option value="">Select Room</option>
+    {ChennaiRoomData.filter(data => 
+        data.MainRoomName === roomType && 
+        isRoomAvailable(data, date, BookingTime, ReleaseTime) // Dynamic Filter
+    ).map((data) => (
+        <option key={data.id} value={data.id}>
+            {data.room_name} (Available)
+        </option>
+    ))}
+</select>
                 </div>
 
                 <div className="input-group">
@@ -307,7 +357,7 @@ const handleUpdate = (id) => {
                 </div>
                 <div className="input-group">
                   <label>Available Training Room Type</label>
-                  <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
+                  {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
                     <option>Select Room</option>
                     {
                       ChennaiRoomData.map((data)=>{
@@ -316,7 +366,18 @@ const handleUpdate = (id) => {
                         }
                       })
                     }
-                  </select>
+                  </select> */}
+                  <select onChange={(e) => setAvailableRoom(e.target.value)}>
+    <option value="">Select Room</option>
+    {ChennaiRoomData.filter(data => 
+        data.MainRoomName === roomType && 
+        isRoomAvailable(data, date, BookingTime, ReleaseTime) // Dynamic Filter
+    ).map((data) => (
+        <option key={data.id} value={data.id}>
+            {data.room_name} (Available)
+        </option>
+    ))}
+</select>
                 </div>
 
                 <div className="input-group">
@@ -518,6 +579,7 @@ const handleUpdate = (id) => {
             <p><strong>Capacity:</strong> {data.capacity} | <strong>Location:</strong> {data.location}</p>
             <p><strong>Current User:</strong> {data.BookedBy}</p>
             <p><strong>Occupied Team:</strong>{data.Occupied_by}</p>
+            <p><strong>Date:</strong>{data.datetime.split('T')[0]}</p>
             <p><strong>Ends At:</strong> {data.ReleaseTiming}</p>
 {/*             
             <button 
@@ -548,6 +610,7 @@ const handleUpdate = (id) => {
                 {data.FutureBookings.map((future, index) => (
                   <li key={index} style={{ fontSize: '0.9rem', marginBottom: '8px', padding: '5px', borderLeft: '3px solid #5bc0de' }}>
                     <strong>{index + 1}. {future.Bookedby}</strong> ({future.occupied_by}) <br/>
+                    <span>Date: {future.date} </span>
                     <span>Time: {future.BookingTime} - {future.ReleaseTime}</span>
                   </li>
                 ))}
