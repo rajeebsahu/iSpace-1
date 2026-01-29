@@ -177,6 +177,48 @@ const isRoomAvailable = (room, selDate, selStart, selEnd) => {
 
 console.log("this is",address)
 
+// Helper to get current time in HH:MM format for the 'min' attribute
+const getCurrentTime = () => {
+    const now = new Date();
+    return now.getHours().toString().padStart(2, '0') + ":" + 
+           now.getMinutes().toString().padStart(2, '0');
+};
+
+useEffect(() => {
+    if (!date) {
+        setDate(new Date().toLocaleDateString('en-CA'));
+    }
+}, []);
+
+const handleTimeChange = (type, value) => {
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const currentTime = getCurrentTime();
+
+    if (type === 'start') {
+        // Validation: If date is today and picked time is in the past
+        if (date === todayStr && value < currentTime) {
+            alert("You cannot select a past time for today.");
+            setBookingTime(currentTime); // Reset to current time
+            return;
+        }
+        // Your original logic
+        setBookingTime(value);
+        // Assuming setToTime is a state or ref from your snippet
+        // Note: passing e.target is better handled by passing the value directly
+    } 
+    
+    if (type === 'end') {
+        if (value <= BookingTime) {
+            alert("End time must be after Start time.");
+            setReleaseTime(""); 
+            return;
+        }
+        // Your original logic
+        setReleaseTime(value);
+        setFromTime(value);
+    }
+};
+
 
   return (
     <div className="booking-page">
@@ -235,18 +277,55 @@ console.log("this is",address)
                 </div>
 
                 {roomType==="Meeting Room" && ( 
-                  <><div className="input-group">
+                  <>
+                  {/* <div className="input-group">
                   <label>Date <span className='textred'>*</span></label>
-                  <input type="text" onFocus={(e) => (e.target.type = "date")}  placeholder="Enter Date"  onChange={(e)=>{setDate(e.target.value)}} />
+                  <input type="text" onFocus={(e) => (e.target.type = "date")} min={new Date().toLocaleDateString('en-CA')}  placeholder="Enter Date"  onChange={(e)=>{setDate(e.target.value)}} />
                 </div>
                 <div className="input-group">
                   <label>From <span className='textred'>*</span></label>
-                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter Start Time" onChange={(e)=>{setBookingTime(e.target.value); setToTime(e.target)}} />
+                  <input type="text" onFocus={(e) => (e.target.type = "time")} min={date === new Date().toLocaleDateString('en-CA') ? getCurrentTime() : "00:00"}  placeholder="Enter Start Time" onChange={(e)=>{setBookingTime(e.target.value); setToTime(e.target)}} />
                 </div>
                 <div className="input-group">
                   <label>To <span className='textred'>*</span></label>
-                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" onChange={(e)=>{setReleaseTime(e.target.value); setFromTime(e.target.value)}} />
-                </div>
+                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" min={BookingTime || "00:00"} onChange={(e)=>{setReleaseTime(e.target.value); setFromTime(e.target.value)}} />
+                </div> */}
+                <div className="input-group">
+    <label>Date <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "date")} 
+        min={new Date().toLocaleDateString('en-CA')} 
+        value={date}
+        placeholder="Enter Date" 
+        onChange={(e) => setDate(e.target.value)} 
+    />
+</div>
+
+<div className="input-group">
+    <label>From <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "time")} 
+        // Visual 'min' restriction for supported browsers
+        min={date === new Date().toLocaleDateString('en-CA') ? getCurrentTime() : "00:00"}
+        value={BookingTime}
+        placeholder="Enter Start Time" 
+        onChange={(e) => handleTimeChange('start', e.target.value)} 
+    />
+</div>
+
+<div className="input-group">
+    <label>To <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "time")} 
+        min={BookingTime || "00:00"}
+        value={ReleaseTime}
+        placeholder="Enter End Time" 
+        onChange={(e) => handleTimeChange('end', e.target.value)} 
+    />
+</div>
                 <div className="input-group">
                   <label>Available Training Room Type <span className='textred'>*</span></label>
                   {/* <select onChange={(e) => setAvailableRoom(e.target.value)}>
@@ -308,7 +387,8 @@ console.log("this is",address)
                 )}
 
                 {roomType==="Conference Room" && ( 
-                  <><div className="input-group">
+                  <>
+                  {/* <div className="input-group">
                   <label>Date <span className='textred'>*</span></label>
                   <input type="text" onFocus={(e) => (e.target.type = "date")}   placeholder="Enter Date" onChange={(e)=>{setDate(e.target.value)}} />
                 </div>
@@ -321,7 +401,43 @@ console.log("this is",address)
                 <div className="input-group">
                   <label>To <span className='textred'>*</span></label>
                   <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" onChange={(e)=>{setReleaseTime(e.target.value)}} />
-                </div>
+                </div> */}
+                <div className="input-group">
+    <label>Date <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "date")} 
+        min={new Date().toLocaleDateString('en-CA')} 
+        value={date}
+        placeholder="Enter Date" 
+        onChange={(e) => setDate(e.target.value)} 
+    />
+</div>
+
+<div className="input-group">
+    <label>From <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "time")} 
+        // Visual 'min' restriction for supported browsers
+        min={date === new Date().toLocaleDateString('en-CA') ? getCurrentTime() : "00:00"}
+        value={BookingTime}
+        placeholder="Enter Start Time" 
+        onChange={(e) => handleTimeChange('start', e.target.value)} 
+    />
+</div>
+
+<div className="input-group">
+    <label>To <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "time")} 
+        min={BookingTime || "00:00"}
+        value={ReleaseTime}
+        placeholder="Enter End Time" 
+        onChange={(e) => handleTimeChange('end', e.target.value)} 
+    />
+</div>
                 <div className="input-group">
                   <label>Available Conference Type <span className='textred'>*</span></label>
                   {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>
@@ -373,19 +489,43 @@ console.log("this is",address)
                 )}
 
                 {roomType==="Training Room" && ( 
-                  <><div className="input-group">
-                  <label>Date <span className='textred'>*</span></label>
-                  <input type="text" onFocus={(e) => (e.target.type = "date")}  placeholder="Enter Date" onChange={(e)=>{setDate(e.target.value)}} />
-                </div>
-                
-                <div className="input-group">
-                  <label>From <span className='textred'>*</span></label>
-                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter Start Time" onChange={(e)=>{setBookingTime(e.target.value)}} />
-                </div>
-                <div className="input-group">
-                  <label>To <span className='textred'>*</span></label>
-                  <input type="text" onFocus={(e) => (e.target.type = "time")}  placeholder="Enter End Time" onChange={(e)=>{setReleaseTime(e.target.value)}} />
-                </div>
+                  <>
+                  <div className="input-group">
+    <label>Date <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "date")} 
+        min={new Date().toLocaleDateString('en-CA')} 
+        value={date}
+        placeholder="Enter Date" 
+        onChange={(e) => setDate(e.target.value)} 
+    />
+</div>
+
+<div className="input-group">
+    <label>From <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "time")} 
+        // Visual 'min' restriction for supported browsers
+        min={date === new Date().toLocaleDateString('en-CA') ? getCurrentTime() : "00:00"}
+        value={BookingTime}
+        placeholder="Enter Start Time" 
+        onChange={(e) => handleTimeChange('start', e.target.value)} 
+    />
+</div>
+
+<div className="input-group">
+    <label>To <span className='textred'>*</span></label>
+    <input 
+        type="text" 
+        onFocus={(e) => (e.target.type = "time")} 
+        min={BookingTime || "00:00"}
+        value={ReleaseTime}
+        placeholder="Enter End Time" 
+        onChange={(e) => handleTimeChange('end', e.target.value)} 
+    />
+</div>
                 <div className="input-group">
                   <label>Available Training Room Type <span className='textred'>*</span></label>
                   {/* <select onChange={(e)=>{setAvailableRoom(e.target.value)}}>

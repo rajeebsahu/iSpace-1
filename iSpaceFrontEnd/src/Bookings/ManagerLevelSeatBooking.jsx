@@ -9,13 +9,21 @@ const ManagerLevelSeatBooking = () => {
     const ManagerAccess = localStorage.getItem("managerAccess") === "true";
     const teamName1 = localStorage.getItem('teamName')
     const EmployeeName = localStorage.getItem('EmployeeName')
-    const [formData, setFormData] = useState({ bookingBy: '', email: '', teamName: '', bookingDate: '', startTime: '', releaseTime: '' });
+    const savedEmail = localStorage.getItem('userEmail');
+    const address = localStorage.getItem('address')
+    const getCurrentTime = () => {
+    const now = new Date();
+    return now.getHours().toString().padStart(2, '0') + ":" + 
+           now.getMinutes().toString().padStart(2, '0');
+};
+    
+    const [formData, setFormData] = useState({ bookingBy: '', email: '', teamName: '', bookingDate: new Date().toLocaleDateString('en-CA'), startTime: getCurrentTime(), releaseTime: '' });
 
     const [EditformData, setEditFormData] = useState({ seatId: '', newReleaseTime: '',bookingDate: '', startTime: '', email: '',bookingBy: '' });
     const [isEditing, setIsEditing] = useState(false);
     const [nextReleaseTime, setNextReleaseTime] = useState(false);
-    const savedEmail = localStorage.getItem('userEmail');
-    const address = localStorage.getItem('address')
+    
+   
     const [activeSeatQueueId, setActiveSeatQueueId] = useState(null);
     const [BookingHistoryData,setBookingHistoryData]=useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -232,8 +240,9 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
             seatData, 
             formData.bookingDate, 
             formData.startTime, 
-            formData.releaseTime
+            formData.releaseTime || "23:59"
         ) : false;
+       
 
         const isSelected = selectedSeats.includes(seatId);
         
@@ -282,6 +291,36 @@ const renderBlock = (blockId, count, startX, startY, cols) => {
             </g>
         );
     });
+};
+
+const handleFormTimeChange = (field, value) => {
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const currentTime = getCurrentTime();
+
+    if (field === 'bookingDate') {
+        // Reset times if date changes to today and previous times are now invalid
+        setFormData({ ...formData, bookingDate: value });
+    }
+
+    if (field === 'startTime') {
+        // If date is today, don't allow past times
+        if (formData.bookingDate === todayStr && value < currentTime) {
+            alert("Cannot select a past time for today.");
+            setFormData({ ...formData, startTime: currentTime });
+            return;
+        }
+        setFormData({ ...formData, startTime: value });
+    }
+
+    if (field === 'releaseTime') {
+        // End time must be after Start time
+        if (value <= formData.startTime) {
+            alert("End time must be after Start time.");
+            setFormData({ ...formData, releaseTime: '' });
+            return;
+        }
+        setFormData({ ...formData, releaseTime: value });
+    }
 };
 
 // const renderBlock = (blockId, count, startX, startY, cols) => {
@@ -345,21 +384,47 @@ return (
       </header>
                 <div className="content-wrapper">
                     <div className="booking-form">
-                        <input type="text" placeholder="Booking By *" onChange={e => setFormData({...formData, bookingBy: e.target.value})} />
-                        <input type="text" placeholder={savedEmail}  disabled />
-                        {/* <input type = "text" placeholder='Team_Name *' onChange={e => setFormData({...formData, teamName: e.target.value})} /> */}
-                        {/* <select onChange={e => setFormData({...formData, teamName: e.target.value})}>
-                            <option>Choose Team</option>
-                            <option>Imigrate</option>
-                            <option>ServiceNow</option>
-                        </select> */}
-                        <select value={teamName1} disabled>
-                            <option value={teamName1}>{teamName1}</option>
-                        </select>
-                        <input type = "text" placeholder="bookingDate *" onFocus={(e) => (e.target.type = "date")} onChange={e => setFormData({...formData, bookingDate: e.target.value})} />
-                        <input type = "text" placeholder='startTime *' onFocus={(e) => (e.target.type = "time")} onChange={e=> setFormData({...formData, startTime: e.target.value})} />
-                        <input type="text" placeholder='EndTime *' onFocus={(e) => (e.target.type = "time")} onChange={e => setFormData({...formData, releaseTime: e.target.value})} value={formData.releaseTime} />
-                    </div>
+    <input 
+        type="text" 
+        placeholder="Booking By *" 
+        onChange={e => setFormData({...formData, bookingBy: e.target.value})} 
+    />
+    
+    <input type="text" placeholder={savedEmail} disabled />
+
+    <select value={teamName1} disabled>
+        <option value={teamName1}>{teamName1}</option>
+    </select>
+
+    {/* Date Input with min today */}
+    <input 
+        type="text" 
+        value={formData.bookingDate}
+        onFocus={(e) => (e.target.type = "date")} 
+        min={new Date().toLocaleDateString('en-CA')}
+        onChange={e => handleFormTimeChange('bookingDate', e.target.value)} 
+    />
+
+    {/* Start Time Input */}
+    <input 
+        type="text" 
+        value={formData.startTime}
+        placeholder='startTime *' 
+        onFocus={(e) => (e.target.type = "time")} 
+        min={formData.bookingDate === new Date().toLocaleDateString('en-CA') ? getCurrentTime() : "00:00"}
+        onChange={e => handleFormTimeChange('startTime', e.target.value)} 
+    />
+
+    {/* End Time Input */}
+    <input 
+        type="text" 
+        placeholder='EndTime *' 
+        value={formData.releaseTime}
+        onFocus={(e) => (e.target.type = "time")} 
+        min={formData.startTime || "00:00"}
+        onChange={e => handleFormTimeChange('releaseTime', e.target.value)} 
+    />
+</div>
 
                     <div className="map-card" style={{ width: '94%', overflow: 'hidden',margin:'19px' }}>
     <svg viewBox="0 0 1000 350" className="office-svg" style={{ width: '100%', height: 'auto'}}>
