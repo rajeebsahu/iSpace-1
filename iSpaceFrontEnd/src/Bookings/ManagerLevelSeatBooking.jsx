@@ -10,7 +10,7 @@ const ManagerLevelSeatBooking = () => {
     const teamName1 = localStorage.getItem('teamName')
     const EmployeeName = localStorage.getItem('EmployeeName')
     const savedEmail = localStorage.getItem('userEmail');
-    const address = localStorage.getItem('address')
+    const address = localStorage.getItem('address');
     const getCurrentTime = () => {
     const now = new Date();
     return now.getHours().toString().padStart(2, '0') + ":" + 
@@ -62,7 +62,7 @@ const ManagerLevelSeatBooking = () => {
         Axios.post(`${API_BASE}cancel_booking/`, {
             seat_id: seatId
         }).then(() => {
-            alert(`Booking for seat ${seatId} has been cancelled.`);
+            alert(`Booking for seat has been cancelled.`);
             fetchSeatStatus();
         }).catch((err) => {
             console.error(err);
@@ -81,7 +81,7 @@ const ManagerLevelSeatBooking = () => {
             booked_by_email: EditformData.email,
             booked_by_name: EditformData.bookedBy
         }).then(() => {
-            alert(`Booking for seat ${EditformData.seatId} has been updated.`);
+            alert(`Booking for seat has been updated.`);
             setIsEditing(false);
             fetchSeatStatus();
         }).catch((err) => {
@@ -161,7 +161,6 @@ const handleBooking = (isQueue = false, specificSeatId = null) => {
             alert("Booking failed: " + (err.response?.data?.message || "Server Error"));
         });
 };
-console.log(savedEmail)
 // const renderBlock = (blockId, count, startX, startY, cols) => {
 //     return [...Array(count)].map((_, i) => {
 //         const seatId = `${blockId}-S${i + 1}`;
@@ -379,6 +378,7 @@ return (
         <div className="header-text">
           <h1>Office Booking System</h1>
           <p>Manage seats and meeting rooms</p>
+          
         </div>
         
       </header>
@@ -392,9 +392,30 @@ return (
     
     <input type="text" placeholder={savedEmail} disabled />
 
+    {/* {savedEmail == "admin@gmail.com" &&(
+        <select onChange={(e) => { setFormData({ ...formData, teamName: e.target.value })}}>
+        <option >Select Team</option>
+        <option >Imigrate</option>
+        <option >ServiceNow</option>
+    </select>
+    )} */}
+
+    {savedEmail !== "admin@gmail.com" ? (
+    <select onChange={(e) => { setFormData({ ...formData, teamName: e.target.value })}}>
+        <option >Select Team</option>
+        <option >Imigrate</option>
+        <option >ServiceNow</option>
+    </select>
+  ) : (
     <select value={teamName1} disabled>
         <option value={teamName1}>{teamName1}</option>
     </select>
+)}
+
+
+    {/* <select value={teamName1} disabled>
+        <option value={teamName1}>{teamName1}</option>
+    </select> */}
 
     {/* Date Input with min today */}
     <input 
@@ -445,28 +466,28 @@ return (
         
         {/* Block 1 */}
         <text x="20" y="125" className="room-label">Block 1</text>
-        <rect x="20" y="130" width="170" height="200" fill="none" stroke="#ccc" />
+        <rect x="20" y="130" width="170" height="215" fill="none" stroke="#ccc" />
         {renderBlock('B1', 12, 30, 145, 4)}
 
         {/* Block 2 */}
         <text x="215" y="125" className="room-label">Block 2</text>
-        <rect x="215" y="130" width="170" height="200" fill="none" stroke="#ccc" />
+        <rect x="215" y="130" width="170" height="215" fill="none" stroke="#ccc" />
         {renderBlock('B2', 12, 225, 145, 4)}
 
         {/* Block 3 */}
         <text x="410" y="125" className="room-label">Block 3</text>
-        <rect x="410" y="130" width="170" height="200" fill="none" stroke="#ccc" />
+        <rect x="410" y="130" width="170" height="215" fill="none" stroke="#ccc" />
         {renderBlock('B3', 11, 420, 145, 4)}
 
         {/* Block 4 */}
         <text x="605" y="125" className="room-label">Block 4</text>
-        <rect x="605" y="130" width="170" height="200" fill="none" stroke="#ccc" />
+        <rect x="605" y="130" width="170" height="215" fill="none" stroke="#ccc" />
         {renderBlock('B4', 18, 615, 145, 4)}
 
         {/* Block 5 */}
         <text x="800" y="125" className="room-label">Block 5</text>
-        <rect x="800" y="130" width="180" height="200" fill="none" stroke="#ccc" />
-        {renderBlock('B5', 20, 810, 145, 5)}
+        <rect x="800" y="130" width="180" height="215" fill="none" stroke="#ccc" />
+        {renderBlock('B5', 20, 810, 145, 4)}
     </svg>
 </div>
 
@@ -600,7 +621,8 @@ return (
                                             {seat.FutureBookings.map((queueItem, index) => (
                                                 <div key={index} className="queue-item-detail">
                                                     <strong>{index + 1}. {queueItem.booked_by_name},{queueItem.booked_by_email}</strong>
-                                                    <span>({queueItem.start_time} - {queueItem.release_time})</span>
+                            
+                                                    <span>({queueItem.booking_date})({queueItem.start_time} - {queueItem.release_time})</span>
                                                 </div>
                                             ))}
                                         </div>

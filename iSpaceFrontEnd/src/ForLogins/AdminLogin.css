@@ -6,7 +6,7 @@
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    background-color:bisque;
+    background-color:#cee4f2;
 }
 .btn-toggle{
     background-color: black;
@@ -17,6 +17,7 @@
     margin: 7px;
     font-size: 18px;
     color: white;
+    margin-bottom: 19px;
 }
 
 /* Left Side: Image Area */
@@ -34,6 +35,9 @@
     background-position: center;
     position: relative;
     overflow: hidden;
+    margin-left: 66px;
+    margin-right: -45px;
+    margin-top: 14px;
 }
 
 .signup-badge {

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // 1. Import for redirection
 import Axios from 'axios';
 import './AdminLogin.css';
-import loginImg from '../assets/AdminAndImployeeLogin.png'; 
+import loginImg from '../assets/LoginImage1.jpg'; 
 
 const AdminLogin = () => {
   const navigate = useNavigate(); // 2. Initialize navigate

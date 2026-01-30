@@ -46,6 +46,7 @@ const Booking = () => {
   const savedEmail = localStorage.getItem('userEmail');
   const address = localStorage.getItem('address')
   const teamName = localStorage.getItem('teamName')
+  const userRole = localStorage.getItem('userRole')
   const ManagerAccess = localStorage.getItem("managerAccess") === "true";
   // Add this line with your other state declarations
   const [activeBookingId, setActiveBookingId] = useState(null);
@@ -108,7 +109,7 @@ const BookingRoom = () => {
     })
     .then((res) => {
         // alert({roomType} + {AvailableRoom} +  "Booked successfully");
-        alert(`${roomType}${AvailableRoom} Booked successfully`);
+        alert(`${roomType} Booked successfully`);
         getChennaiRoom();
     })
     .catch((err) => {
@@ -150,11 +151,15 @@ const handleUpdate = (id) => {
 
 const isRoomAvailable = (room, selDate, selStart, selEnd) => {
     if (!selDate || !selStart || !selEnd) return true;
-
+    console.log("hello date")
+    console.log(selDate,selEnd,selStart)
+    console.log(room.availability_status)
     // 1. Check current active booking
     if (room.availability_status) {
         const activeDate = room.datetime.split('T')[0];
+        console.log(activeDate)
         if (activeDate === selDate) {
+          console.log("becoming false")
             // Overlap check: Starts before current ends AND ends after current starts
             const collision = (selStart < room.ReleaseTiming && selEnd > room.OccuipedTiming);
             if (collision) return false;
@@ -219,6 +224,8 @@ const handleTimeChange = (type, value) => {
     }
 };
 
+console.log(ChennaiRoomData)
+
 
   return (
     <div className="booking-page">
@@ -226,7 +233,14 @@ const handleTimeChange = (type, value) => {
       <header className="booking-header">
         <div className="header-text">
           <h1>Office Booking System</h1>
-          <p>Manage seats and meeting rooms</p>
+          {userRole === "admin" ? (
+    <p>Manage office rooms And Seats</p>
+  ) : (
+    <p>Manage office rooms</p>
+)}
+          
+          
+         
         </div>
         <div className="header-buttons">
           <button className='btn1-dark'><Link to="/Ai">Ai predections</Link></button>
@@ -298,7 +312,7 @@ const handleTimeChange = (type, value) => {
         min={new Date().toLocaleDateString('en-CA')} 
         value={date}
         placeholder="Enter Date" 
-        onChange={(e) => setDate(e.target.value)} 
+        onChange={(e) => setDate(e.target.value)}
     />
 </div>
 
@@ -723,7 +737,7 @@ const handleTimeChange = (type, value) => {
             
           ));
         } else {
-          return <p className="no-data-text">No active bookings found for "{Bookedby}"</p>;
+          return <p className="no-data-text" style={{color:"black"}}>No active bookings found for "{Bookedby}"</p>;
         }
       })()}
     </>

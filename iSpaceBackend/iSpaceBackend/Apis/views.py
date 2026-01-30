@@ -149,6 +149,7 @@ class ChennaiRoomViewSet(viewsets.ModelViewSet):
                 # Ensure FutureBookings is initialized as a list
                 if not isinstance(room.FutureBookings, list):
                     room.FutureBookings = []
+                    
                 
                 room.FutureBookings.append(new_booking_data)
                 room.save()

@@ -1,18 +1,17 @@
+
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from .models import BookingHistory
 import datetime
 
 def predict_specific_booking(room_name, input_date, input_time):
-    # 1. Determine Category: Seats usually contain "-S" (e.g., B1-S1)
+    # 1. Determine Category
     is_seat_request = "-S" in room_name
     required_type = "SeatBooking" if is_seat_request else "RoomBooking"
 
-    # 2. Filter History: Load only records that match the requested category
+    # 2. Filter History
     data = list(BookingHistory.objects.filter(BookingType=required_type).values())
-    print(data)
     
-    # Check for minimum data requirements in that specific category
     if len(data) < 5:
         return {
             "status": "Low Data", 
@@ -21,11 +20,35 @@ def predict_specific_booking(room_name, input_date, input_time):
 
     df = pd.DataFrame(data)
     
-    # 3. Feature Engineering: Numeric conversion for ML
-    df['day_of_week'] = pd.to_datetime(df['date']).dt.dayofweek
-    df['hour'] = df['start_time'].apply(lambda x: int(x.split(':')[0]))
+    # --- DATA CLEANING ---
+    # Remove rows where start_time or date is 'N/A', empty, or None
+    df = df[df['start_time'].notna()]
+    df = df[df['start_time'] != 'N/A']
+    df = df[df['date'].notna()]
+    df = df[df['date'] != 'N/A']
+
+    # Re-verify count after cleaning
+    if len(df) < 5:
+        return {
+            "status": "Low Data", 
+            "suggestion": "Insufficient valid history records (cleaned) to generate patterns."
+        }
+
+    # 3. Feature Engineering: Numeric conversion
+    try:
+        # Convert date to day of week (0=Monday, 6=Sunday)
+        df['day_of_week'] = pd.to_datetime(df['date']).dt.dayofweek
+        
+        # Safely extract hour, ignoring rows that don't match HH:MM format
+        def extract_hour(time_val):
+            return int(str(time_val).split(':')[0])
+
+        df['hour'] = df['start_time'].apply(extract_hour)
+        
+    except Exception as e:
+        return {"status": "Processing Error", "suggestion": f"Data format error: {str(e)}"}
     
-    # 4. Train Model: Trained ONLY on the relevant category (Room or Seat)
+    # 4. Train Model
     model = RandomForestClassifier(n_estimators=100)
     model.fit(df[['day_of_week', 'hour']], df['room_name'])
     

@@ -261,6 +261,7 @@ class ChennaiRooms(models.Model):
         self.OccuipedTiming = "N/A"
         self.ReleaseTiming = "N/A"
         self.BookedBy = "N/A"
+        # self.datetime = "N/A"
         self.save()
 
     def log_to_history(self):

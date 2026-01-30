@@ -8,7 +8,7 @@ const ContactUs = () => {
       <header className="contact-header">
         <div className="header-text">
           <h1>Contact Us</h1>
-          <p>Have questions? Our team is here to help you.</p>
+          <p style={{color:"black"}}>Have questions? Our team is here to help you.</p>
         </div>
       </header>
 
